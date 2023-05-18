@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
 
 	"github.com/jroimartin/gocui"
 )
@@ -163,6 +165,42 @@ func board(g *gocui.Gui) error {
 						fmt.Fprintf(v, "%d %s\n", 10, colorRed("♥"))
 						fmt.Fprintln(v, "     P")
 					}
+
+					// Player 1 base
+					if j == 4 && i == 0 {
+						fmt.Fprintf(v, "%s%s%s%s%s\n", "10", drawHeart(), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"))
+						fmt.Fprintf(v, "%s%s%s%s%s%s\n", colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"))
+					}
+					if j == 4 && i == 1 {
+						fmt.Fprintf(v, "%s%s%s%s%s%s\n", colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"))
+						fmt.Fprintf(v, "%s%s%s%s%s%s\n", colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"))
+					}
+					if j == 5 && i == 0 {
+						fmt.Fprintf(v, "%s%s%s%s%s%s\n", colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"))
+						fmt.Fprintf(v, "%s%s%s%s%s%s\n", colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"))
+					}
+					if j == 5 && i == 1 {
+						fmt.Fprintf(v, "%s%s%s%s%s%s\n", colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"))
+						fmt.Fprintf(v, "%s%s%s%s%s%s\n", colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"), colorGreen("⛫"))
+					}
+
+					// Player 2 base
+					if j == 4 && i == 8 {
+						fmt.Fprintf(v, "%s%s%s%s%s\n", "10", drawHeart(), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"))
+						fmt.Fprintf(v, "%s%s%s%s%s%s\n", colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"))
+					}
+					if j == 4 && i == 9 {
+						fmt.Fprintf(v, "%s%s%s%s%s%s\n", colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"))
+						fmt.Fprintf(v, "%s%s%s%s%s%s\n", colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"))
+					}
+					if j == 5 && i == 8 {
+						fmt.Fprintf(v, "%s%s%s%s%s%s\n", colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"))
+						fmt.Fprintf(v, "%s%s%s%s%s%s\n", colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"))
+					}
+					if j == 5 && i == 9 {
+						fmt.Fprintf(v, "%s%s%s%s%s%s\n", colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"))
+						fmt.Fprintf(v, "%s%s%s%s%s%s\n", colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"), colorRed("⛫"))
+					}
 				}
 				offsetX = endX
 				endX = offsetX + mulX
@@ -174,6 +212,47 @@ func board(g *gocui.Gui) error {
 		}
 	}
 	return nil
+}
+
+func setBackgroundColor(x, y int64, color gocui.Attribute, g *gocui.Gui) {
+	view, err := g.View(fmt.Sprintf("board%d%d", x, y))
+	// TODO: handler out of bound error
+	if err == nil {
+		view.BgColor = color
+	}
+}
+
+func drawMovementPlaces(x, y int64, speed int64, g *gocui.Gui) {
+	if speed >= 1 {
+		setBackgroundColor(x, y+1, gocui.ColorYellow, g)
+		setBackgroundColor(x, y-1, gocui.ColorYellow, g)
+		setBackgroundColor(x+1, y, gocui.ColorYellow, g)
+		setBackgroundColor(x-1, y, gocui.ColorYellow, g)
+	}
+	if speed >= 2 {
+		setBackgroundColor(x+1, y+1, gocui.ColorYellow, g)
+		setBackgroundColor(x-1, y-1, gocui.ColorYellow, g)
+		setBackgroundColor(x+1, y-1, gocui.ColorYellow, g)
+		setBackgroundColor(x-1, y+1, gocui.ColorYellow, g)
+		setBackgroundColor(x, y+2, gocui.ColorYellow, g)
+		setBackgroundColor(x, y-2, gocui.ColorYellow, g)
+		setBackgroundColor(x+2, y, gocui.ColorYellow, g)
+		setBackgroundColor(x-2, y, gocui.ColorYellow, g)
+	}
+	if speed >= 3 {
+		setBackgroundColor(x+1, y+2, gocui.ColorYellow, g)
+		setBackgroundColor(x-1, y+2, gocui.ColorYellow, g)
+		setBackgroundColor(x+1, y-2, gocui.ColorYellow, g)
+		setBackgroundColor(x-1, y-2, gocui.ColorYellow, g)
+		setBackgroundColor(x+2, y-1, gocui.ColorYellow, g)
+		setBackgroundColor(x+2, y+1, gocui.ColorYellow, g)
+		setBackgroundColor(x-2, y+1, gocui.ColorYellow, g)
+		setBackgroundColor(x-2, y-1, gocui.ColorYellow, g)
+		setBackgroundColor(x, y+3, gocui.ColorYellow, g)
+		setBackgroundColor(x, y-3, gocui.ColorYellow, g)
+		setBackgroundColor(x+3, y, gocui.ColorYellow, g)
+		setBackgroundColor(x-3, y, gocui.ColorYellow, g)
+	}
 }
 
 func layout(g *gocui.Gui) error {
@@ -219,11 +298,15 @@ func keybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
 		return err
 	}
-	for _, n := range []string{"but1", "but2"} {
-		if err := g.SetKeybinding(n, gocui.MouseLeft, gocui.ModNone, showMsg); err != nil {
-			return err
+	for i := 0; i <= 9; i = i + 1 {
+		for j := 0; j <= 9; j = j + 1 {
+			key := fmt.Sprintf("board%d%d", i, j)
+			if err := g.SetKeybinding(key, gocui.MouseLeft, gocui.ModNone, showMsg); err != nil {
+				return err
+			}
 		}
 	}
+
 	if err := g.SetKeybinding("msg", gocui.MouseLeft, gocui.ModNone, delMsg); err != nil {
 		return err
 	}
@@ -235,24 +318,36 @@ func quit(g *gocui.Gui, v *gocui.View) error {
 }
 
 func showMsg(g *gocui.Gui, v *gocui.View) error {
-	var l string
-	var err error
+	// var l string
 
-	if _, err := g.SetCurrentView(v.Name()); err != nil {
-		return err
+	// if _, err := g.SetCurrentView(v.Name()); err != nil {
+	// 	return err
+	// }
+
+	// cx, cy := v.Cursor()
+	// if l, err = v.Line(cy); err != nil {
+	// 	l = ""
+	// }
+	xy := strings.Replace(v.Name(), "board", "", 1)
+
+	x, err := strconv.ParseInt(string(xy[0]), 10, 64)
+	if err != nil {
+		return fmt.Errorf("could not parse x")
 	}
 
-	_, cy := v.Cursor()
-	if l, err = v.Line(cy); err != nil {
-		l = ""
+	y, err := strconv.ParseInt(string(xy[1]), 10, 64)
+	if err != nil {
+		return fmt.Errorf("could not parse y")
 	}
+
+	drawMovementPlaces(x, y, 3, g)
 
 	maxX, maxY := g.Size()
-	if v, err := g.SetView("msg", maxX/2-10, maxY/2, maxX/2+10, maxY/2+2); err != nil {
+	if v2, err := g.SetView("msg", maxX/2-10, maxY/2, maxX/2+10, maxY/2+2); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		fmt.Fprintln(v, l)
+		fmt.Fprintf(v2, "%s", v.Name())
 	}
 	return nil
 }
