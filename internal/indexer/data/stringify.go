@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/hanchon/garnet/internal/gui"
 )
 
 var SystemTables = []string{
@@ -45,24 +46,6 @@ func processTable(ret *[]string, vT *Table) {
 	}
 }
 
-func colorGreen(value string) string {
-	return fmt.Sprintf("\033[1;32m%s\033[0m", value)
-}
-
-func colorBlue(value string) string {
-	return fmt.Sprintf("\033[1;34m%s\033[0m", value)
-}
-func colorYellow(value string) string {
-	return fmt.Sprintf("\033[0;33m%s\033[0m", value)
-}
-
-func colorMagenta(value string) string {
-	return fmt.Sprintf("\033[1;35m%s\033[0m", value)
-}
-
-func colorCyan(value string) string {
-	return fmt.Sprintf("\033[0;36m%s\033[0m", value)
-}
 func separatorOffset(maxLenght int, wordLength int) int {
 	offset := 0
 	if (maxLenght-wordLength)%2 == 0 {
@@ -82,15 +65,15 @@ func (db Database) ToStringList(maxLenght int) []string {
 
 		worldSeparator := strings.Repeat("+", (separatorOffset(maxLenght, 48)))
 
-		ret = append(ret, colorYellow(strings.Repeat("=", maxLenght)))
-		ret = append(ret, fmt.Sprintf("%s %s %s", colorGreen(worldSeparator), colorBlue(fmt.Sprintf("World %s", vW.Address)), colorGreen(worldSeparator)))
-		ret = append(ret, colorYellow(strings.Repeat("=", maxLenght)))
+		ret = append(ret, gui.ColorYellow(strings.Repeat("=", maxLenght)))
+		ret = append(ret, fmt.Sprintf("%s %s %s", gui.ColorGreen(worldSeparator), gui.ColorBlue(fmt.Sprintf("World %s", vW.Address)), gui.ColorGreen(worldSeparator)))
+		ret = append(ret, gui.ColorYellow(strings.Repeat("=", maxLenght)))
 		ret = append(ret, "")
 
 		// Game tables
 		titleGameTables := "Game tables"
 		gameTablesSeparator := strings.Repeat("\u2632", (separatorOffset(maxLenght, len(titleGameTables)) - 1))
-		ret = append(ret, fmt.Sprintf("%s %s %s", colorCyan(gameTablesSeparator), colorBlue(titleGameTables), colorCyan(gameTablesSeparator)))
+		ret = append(ret, fmt.Sprintf("%s %s %s", gui.ColorCyan(gameTablesSeparator), gui.ColorBlue(titleGameTables), gui.ColorCyan(gameTablesSeparator)))
 		ret = append(ret, "")
 		for _, vT := range vW.Tables {
 			if isSystemTable(vT.Metadata.TableName) == false {
@@ -104,7 +87,7 @@ func (db Database) ToStringList(maxLenght int) []string {
 		// System tables
 		titleSystemTables := "System tables"
 		systemTablesSeparator := strings.Repeat("\u2632", (separatorOffset(maxLenght, len(titleSystemTables)) - 1))
-		ret = append(ret, fmt.Sprintf("%s %s %s", colorCyan(systemTablesSeparator), colorBlue(titleSystemTables), colorCyan(systemTablesSeparator)))
+		ret = append(ret, fmt.Sprintf("%s %s %s", gui.ColorCyan(systemTablesSeparator), gui.ColorBlue(titleSystemTables), gui.ColorCyan(systemTablesSeparator)))
 		ret = append(ret, "")
 		for _, v := range tempSysTables {
 			ret = append(ret, v)

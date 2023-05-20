@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hanchon/garnet/internal/gui"
 	"github.com/hanchon/garnet/internal/indexer/data"
 	"github.com/jroimartin/gocui"
 )
@@ -59,7 +60,7 @@ func (ui *DebugUI) ProcessLatestEvents(database *data.Database) {
 					return err
 				}
 				v.Clear()
-				fmt.Fprintln(v, colorMagenta("Latest Events:"))
+				fmt.Fprintln(v, gui.ColorMagenta("Latest Events:"))
 				fmt.Fprintln(v, strings.Repeat("─", logoWidth-logoOffsetX))
 
 				end := 0
@@ -99,7 +100,7 @@ func (ui *DebugUI) ProcessBlockchainInfo(database *data.Database) {
 					return err
 				}
 				v.Clear()
-				fmt.Fprintln(v, colorMagenta("Blockchain Info:"))
+				fmt.Fprintln(v, gui.ColorMagenta("Blockchain Info:"))
 				fmt.Fprintln(v, strings.Repeat("─", logoWidth))
 				fmt.Fprintf(v, " \u26d3 ChainID: %s\n", database.ChainID)
 				fmt.Fprintf(v, " \u279a Height : %d\n", database.LastHeight)
@@ -184,7 +185,7 @@ func (ui *DebugUI) ProcessIncomingData(database *data.Database) {
 						end = ui.yOffset + maxLinesToDisplay
 					}
 
-					fmt.Fprintln(v, colorMagenta("Tables Info:"))
+					fmt.Fprintln(v, gui.ColorMagenta("Tables Info:"))
 					fmt.Fprintln(v, strings.Repeat("─", debugWindowWidth-debugWindowOffset-1))
 					for i := ui.yOffset; i < end; i++ {
 						fmt.Fprintln(v, ui.data[i])
@@ -218,16 +219,8 @@ const (
 	debugWindowOffset    = 4
 )
 
-func colorRed(value string) string {
-	return fmt.Sprintf("\033[31;1m%s\033[0m", value)
-}
-
-func colorMagenta(value string) string {
-	return fmt.Sprintf("\033[1;35m%s\033[0m", value)
-}
-
 func layout(g *gocui.Gui) error {
-	logo := colorRed(`
+	logo := gui.ColorRed(`
  _____                       _
 |  __ \                     | |
 | |  \/ __ _ _ __ _ __   ___| |_
@@ -247,7 +240,7 @@ func layout(g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		fmt.Fprintln(v, colorMagenta("Blockchain Info:"))
+		fmt.Fprintln(v, gui.ColorMagenta("Blockchain Info:"))
 		fmt.Fprintln(v, strings.Repeat("─", logoWidth))
 		fmt.Fprintln(v, "ChainID: ")
 		fmt.Fprintln(v, "Height: ")
@@ -260,7 +253,7 @@ func layout(g *gocui.Gui) error {
 		v.Wrap = true
 		v.Frame = true
 
-		fmt.Fprintln(v, colorMagenta("Latest Events:"))
+		fmt.Fprintln(v, gui.ColorMagenta("Latest Events:"))
 		fmt.Fprintln(v, strings.Repeat("─", logoWidth-logoOffsetX))
 	}
 

@@ -1,20 +1,21 @@
 package main
 
 import (
-	"context"
 	"log"
-	"math/big"
 	"os"
-	"time"
 
+	"github.com/hanchon/garnet/internal/backend"
+	"github.com/hanchon/garnet/internal/indexer"
 	"github.com/hanchon/garnet/internal/indexer/data"
-	"github.com/hanchon/garnet/internal/indexer/eth"
-	"github.com/hanchon/garnet/internal/logger"
+)
+
+const (
+	port = 6666
 )
 
 func main() {
+	// Set the log output to a file (stdin, stdout, stderror used by GUI)
 	fileName := "logFile.log"
-	// open log file
 	logFile, err := os.OpenFile(fileName, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		log.Panic(err)
@@ -26,54 +27,22 @@ func main() {
 	// Index the database
 	quit := false
 	database := data.NewDatabase()
-	go process(&database, &quit)
+	go indexer.Process(&database, &quit)
+
+	// Set up the GUI
 	ui := NewDebugUI()
 	defer ui.ui.Close()
 
 	go ui.ProcessIncomingData(&database)
 	go ui.ProcessBlockchainInfo(&database)
 	go ui.ProcessLatestEvents(&database)
+
+	// Start the backend server
+	go backend.StartGorillaServer(port)
+
+	// Display the GUI
 	ui.Run()
+
+	// Exit program
 	quit = true
-}
-
-func process(database *data.Database, quit *bool) {
-	logger.LogInfo("indexer is starting...")
-	c := eth.GetEthereumClient("http://localhost:8545/")
-	ctx := context.Background()
-	chainId, err := c.ChainID(ctx)
-	if err != nil {
-		logger.LogError("could not get the latest height")
-		// TODO: retry instead of panic
-		panic("")
-	}
-	database.ChainID = chainId.String()
-
-	height, err := c.BlockNumber(context.Background())
-	if err != nil {
-		logger.LogError("could not get the latest height")
-		// TODO: retry instead of panic
-		panic("")
-	}
-
-	eth.ProcessBlocks(c, database, nil, big.NewInt(int64(height)))
-
-	for *quit == false {
-		// TODO: handle control+c
-		newHeight, err := c.BlockNumber(context.Background())
-		if err != nil {
-			logger.LogError("could not get the latest height")
-			// TODO: retry instead of panic
-			panic("")
-		}
-
-		if newHeight != height {
-			eth.ProcessBlocks(c, database, big.NewInt(int64(height)), big.NewInt(int64(newHeight)))
-			height = newHeight
-		}
-
-		database.LastHeight = newHeight
-
-		time.Sleep(1 * time.Second)
-	}
 }

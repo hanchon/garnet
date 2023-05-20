@@ -3,8 +3,9 @@ module github.com/hanchon/garnet
 go 1.19
 
 require (
-	github.com/amoghe/distillog v0.0.0-20180726233512-ae382b35b717
 	github.com/ethereum/go-ethereum v1.11.6
+	github.com/gorilla/mux v1.8.0
+	github.com/gorilla/websocket v1.4.2
 	github.com/jroimartin/gocui v0.5.0
 	github.com/umbracle/ethgo v0.1.3
 	go.uber.org/zap v1.24.0
@@ -20,7 +21,6 @@ require (
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/holiman/uint256 v1.2.2-0.20230321075855-87b91420868c // indirect
 	github.com/mattn/go-runewidth v0.0.10 // indirect
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
