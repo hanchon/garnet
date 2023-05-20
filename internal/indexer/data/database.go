@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/hanchon/garnet/internal/indexer/data/mudhelpers"
 	"github.com/hanchon/garnet/internal/logger"
@@ -54,12 +55,21 @@ func (w *World) GetTable(tableId string) *Table {
 }
 
 type Database struct {
-	Worlds map[string]*World
-	Events []Event
+	Worlds     map[string]*World
+	Events     []Event
+	LastUpdate time.Time
+	LastHeight uint64
+	ChainID    string
 }
 
 func NewDatabase() Database {
-	return Database{Worlds: map[string]*World{}, Events: make([]Event, 0)}
+	return Database{
+		Worlds:     map[string]*World{},
+		Events:     make([]Event, 0),
+		LastUpdate: time.Now(),
+		LastHeight: 0,
+		ChainID:    "",
+	}
 }
 
 func (db *Database) AddEvent(tableName string, key string, fields *[]Field) {
@@ -75,6 +85,7 @@ func (db *Database) AddEvent(tableName string, key string, fields *[]Field) {
 		value = value + "}"
 	}
 	db.Events = append(db.Events, Event{Table: tableName, Row: key, Value: value})
+	db.LastUpdate = time.Now()
 }
 
 func (db *Database) GetWorld(worldId string) *World {
@@ -98,6 +109,7 @@ func (db *Database) AddRow(table *Table, key []byte, fields *[]Field) {
 	// TODO: add locks here
 	(*table.Rows)[keyAsString] = *fields
 	db.AddEvent(table.Metadata.TableName, keyAsString, fields)
+	db.LastUpdate = time.Now()
 }
 
 func (db *Database) SetField(table *Table, key []byte, event *mudhelpers.StorecoreStoreSetField) {
@@ -121,6 +133,7 @@ func (db *Database) SetField(table *Table, key []byte, event *mudhelpers.Storeco
 	}
 
 	db.AddEvent(table.Metadata.TableName, keyAsString, fields)
+	db.LastUpdate = time.Now()
 }
 
 func (db *Database) DeleteRow(table *Table, key []byte) {
@@ -130,4 +143,5 @@ func (db *Database) DeleteRow(table *Table, key []byte) {
 		delete((*table.Rows), keyAsString)
 	}
 	db.AddEvent(table.Metadata.TableName, keyAsString, nil)
+	db.LastUpdate = time.Now()
 }

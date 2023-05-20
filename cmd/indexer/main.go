@@ -24,13 +24,31 @@ func main() {
 	log.SetFlags(log.LstdFlags)
 
 	// Index the database
-	process()
+	quit := false
+	database := data.NewDatabase()
+	go process(&database, &quit)
+	ui := NewDebugUI()
+	defer ui.ui.Close()
+
+	go ui.ProcessIncomingData(&database)
+	go ui.ProcessBlockchainInfo(&database)
+	go ui.ProcessLatestEvents(&database)
+	ui.Run()
+	quit = true
 }
 
-func process() {
-	database := data.NewDatabase()
+func process(database *data.Database, quit *bool) {
 	logger.LogInfo("indexer is starting...")
 	c := eth.GetEthereumClient("http://localhost:8545/")
+	ctx := context.Background()
+	chainId, err := c.ChainID(ctx)
+	if err != nil {
+		logger.LogError("could not get the latest height")
+		// TODO: retry instead of panic
+		panic("")
+	}
+	database.ChainID = chainId.String()
+
 	height, err := c.BlockNumber(context.Background())
 	if err != nil {
 		logger.LogError("could not get the latest height")
@@ -38,9 +56,10 @@ func process() {
 		panic("")
 	}
 
-	eth.ProcessBlocks(c, &database, nil, big.NewInt(int64(height)))
+	eth.ProcessBlocks(c, database, nil, big.NewInt(int64(height)))
 
-	for {
+	for *quit == false {
+		// TODO: handle control+c
 		newHeight, err := c.BlockNumber(context.Background())
 		if err != nil {
 			logger.LogError("could not get the latest height")
@@ -49,9 +68,11 @@ func process() {
 		}
 
 		if newHeight != height {
-			eth.ProcessBlocks(c, &database, big.NewInt(int64(height)), big.NewInt(int64(newHeight)))
+			eth.ProcessBlocks(c, database, big.NewInt(int64(height)), big.NewInt(int64(newHeight)))
 			height = newHeight
 		}
+
+		database.LastHeight = newHeight
 
 		time.Sleep(1 * time.Second)
 	}
