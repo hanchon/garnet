@@ -7,6 +7,7 @@ import (
 	"github.com/hanchon/garnet/internal/backend"
 	"github.com/hanchon/garnet/internal/indexer"
 	"github.com/hanchon/garnet/internal/indexer/data"
+	"github.com/hanchon/garnet/internal/txbuilder"
 )
 
 const (
@@ -23,6 +24,12 @@ func main() {
 	defer logFile.Close()
 	log.SetOutput(logFile)
 	log.SetFlags(log.LstdFlags)
+
+	// Send coins to user wallets
+	_, a, _ := txbuilder.GetWallet(0)
+	txbuilder.Faucet(a.Address.Hex())
+	_, a, _ = txbuilder.GetWallet(1)
+	txbuilder.Faucet(a.Address.Hex())
 
 	// Index the database
 	quit := false

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/hanchon/garnet/internal/indexer/data/mudhelpers"
 	"github.com/hanchon/garnet/internal/logger"
 )
@@ -117,7 +118,8 @@ func (db *Database) GetTable(worldId string, tableId string) *Table {
 
 func (db *Database) AddRow(table *Table, key []byte, fields *[]Field) {
 	// Use the database to add and remove info so we can broadcast events to subs
-	keyAsString := string(key)
+	// keyAsString := string(key)
+	keyAsString := hexutil.Encode(key)
 	// TODO: add locks here
 	(*table.Rows)[keyAsString] = *fields
 	db.AddEvent(table.Metadata.TableName, keyAsString, fields)
@@ -127,7 +129,8 @@ func (db *Database) AddRow(table *Table, key []byte, fields *[]Field) {
 func (db *Database) SetField(table *Table, key []byte, event *mudhelpers.StorecoreStoreSetField) {
 	// TODO: add locks here
 
-	keyAsString := string(key)
+	// keyAsString := string(key)
+	keyAsString := hexutil.Encode(key)
 	fields, modified := BytesToFieldWithDefaults(event.Data, *table.Schema.Schema.Value, event.SchemaIndex, table.Schema.FieldNames)
 
 	_, ok := (*table.Rows)[keyAsString]
@@ -149,7 +152,8 @@ func (db *Database) SetField(table *Table, key []byte, event *mudhelpers.Storeco
 }
 
 func (db *Database) DeleteRow(table *Table, key []byte) {
-	keyAsString := string(key)
+	// keyAsString := string(key)
+	keyAsString := hexutil.Encode(key)
 	// TODO: add locks here
 	if _, ok := (*table.Rows)[keyAsString]; ok {
 		delete((*table.Rows), keyAsString)

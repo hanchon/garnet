@@ -2,12 +2,15 @@ package game
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/url"
 	"strings"
 	"time"
 
 	"github.com/gorilla/websocket"
 	"github.com/hanchon/garnet/internal/backend/messages"
+	"github.com/hanchon/garnet/internal/indexer/data"
+	"github.com/hanchon/garnet/internal/logger"
 	"github.com/jroimartin/gocui"
 )
 
@@ -32,6 +35,11 @@ type MatchState struct {
 	Board                  []SummonedUnit
 }
 
+const (
+	EmptyAction  = ""
+	SummonAction = "summon"
+)
+
 type GameState struct {
 	MatchState           *MatchState
 	ListOfAvailableGames []string
@@ -48,48 +56,17 @@ type GameState struct {
 	lastRenderUpdate             time.Time // Last time we updated the displayed list of games
 	listOfAvailableGamesToRender []string
 	yOffset                      int
-}
-
-var testData = []string{
-	"0x1000000000000000000000000000000000000000000000000000000000000034",
-	"0x0200000000000000000000000000000000000000000000000000000000000038",
-	"0x0010000000000000000000000000000000000000000000000000000000000088",
-	"0x0210000000000000000000000000000000000000000000000000000000000024",
-	"0x0002000000000000000000000000000000000000000000000000000000000044",
-	"0x0200000000000000000000000000000000000000000000000000000000000094",
-	"0x0000020000000000000000000000000000000000000000000000000000000014",
-	"0x0000000001000000000000000000000000000000000000000000000000000024",
-	"0x0000002000000000000000000000000000000000000000000000000000001034",
-	"0x0000000200000000000000000000000000000000000000000000000000000034",
-	"0x0000000301000000000000000000000000000000000000000000005555000035",
-	"0x0000000000000000000000000000000000000000000000000000000000000038",
-	"0x0000800000000000000000000000000000000000000000000000000000000088",
-	"0x0000000000000000000000000000000000000000000000000001111000000024",
-	"0x0000000000000000000000000000000000000000000000000000000000000044",
-	"0x0000000000000000000010000000000000000000000000000000000000000094",
-	"0x0000000000000000000000000000000000000000000000000000000000000014",
-	"0x0000000000000000000010000000000000000000000000000000000000000024",
-	"0x0000000000000000000000000000000000000000000000000000000000001034",
-	"0x00000000000000000000000000000000000000j0000000000000000000000034",
-	"0x00000000000000000000000000000000000000002h0000010000000000000035",
-	"0x0000000000000000000000000000000000000jj000h000080000000000000038",
-	"0x0000000000000000000000000000000020000000000h00002000000000000088",
-	"0x00000000000000000000000000000000j0000000000h00008000000000000024",
-	"0x0000000000000000000000000000000000000000000010000000000000000044",
-	"0x00000000000000000000000000000000k0000000000000100000000000000094",
-	"0x000000000000000000000000000000jj00000000000000010000000000000014",
-	"0x0000000000000000000010000000100200000000000000000000000000000024",
-	"0x0000000000000000000000000000000100000000000000000000000000001034",
-	"0x0000000000000000000000000000100000000000000000000000000000000034",
-	"0x0000000000000000000000000010000000000000000000000000000000000035",
-	"0x0000000000000000000010h00100000000000000000000000000000000000034",
-	"0x0000000000000000000000101000000000000000000000000000000000000034",
+	BoardStatus                  *data.MatchData
+	lastBoardStatusUpdate        time.Time
+	lastBoardRenderUpdate        time.Time
+	UnitSelected                 string
+	CurrentAction                string
 }
 
 func NewGameState(ui *gocui.Gui, username string, password string) *GameState {
 	return &GameState{
 		MatchState:           nil,
-		ListOfAvailableGames: testData,
+		ListOfAvailableGames: []string{},
 		Ws:                   nil,
 		Connected:            false,
 		Username:             username,
@@ -102,6 +79,11 @@ func NewGameState(ui *gocui.Gui, username string, password string) *GameState {
 		listOfAvailableGamesToRender: []string{},
 		yOffset:                      0,
 		lastRenderUpdate:             time.Unix(0, 0),
+		BoardStatus:                  nil,
+		lastBoardStatusUpdate:        time.Unix(0, 1),
+		lastBoardRenderUpdate:        time.Unix(0, 0),
+		UnitSelected:                 "",
+		CurrentAction:                EmptyAction,
 	}
 }
 
@@ -129,6 +111,7 @@ func InitWsConnection(gameState *GameState) *websocket.Conn {
 			if strings.Contains(string(v), "connected") {
 				gameState.Connected = true
 			}
+
 			if strings.Contains(string(v), "matchlist") {
 				var msg messages.MatchList
 				err := json.Unmarshal(v, &msg)
@@ -138,8 +121,36 @@ func InitWsConnection(gameState *GameState) *websocket.Conn {
 				}
 				gameState.ListOfAvailableGames = msg.Matches
 			}
+
+			if strings.Contains(string(v), "boardstatus") {
+				var msg messages.BoardStatus
+				err := json.Unmarshal(v, &msg)
+				if err != nil {
+					// Invalid json
+					panic(err)
+				}
+
+				if gameState.BoardStatus == nil {
+					gameState.ui.SetManagerFunc(GameLayout)
+					if err := gameState.GameKeybindings(gameState.ui); err != nil {
+						logger.LogError("[client] failed to load game keybindings")
+					}
+				}
+
+				gameState.BoardStatus = &msg.Status
+				gameState.lastBoardStatusUpdate = time.Now()
+			}
 		}
 	}()
 
 	return c
+}
+
+func (gs *GameState) GetSelectedCard() (data.Card, error) {
+	for _, card := range gs.BoardStatus.Cards {
+		if card.ID == gs.UnitSelected {
+			return card, nil
+		}
+	}
+	return data.Card{}, fmt.Errorf("card not selected")
 }

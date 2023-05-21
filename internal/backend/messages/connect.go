@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/hanchon/garnet/internal/logger"
+	"github.com/hanchon/garnet/internal/txbuilder"
 )
 
 func connectMessage(ws *WebSocketContainer, registeredUsers map[string]User, p *[]byte) error {
@@ -26,7 +27,13 @@ func connectMessage(ws *WebSocketContainer, registeredUsers map[string]User, p *
 	ws.User = connectMsg.User
 	ws.Authenticated = true
 	ws.WalletID = v.WalletID
-	logger.LogInfo(fmt.Sprintf("[backend] user connected: %s", ws.User))
+	_, account, err := txbuilder.GetWallet(v.WalletID)
+	if err != nil {
+		logger.LogError(fmt.Sprintf("[backend] could not generate user wallet : %s", ws.User))
+	}
+	ws.WalletAddress = account.Address.Hex()
+
+	logger.LogInfo(fmt.Sprintf("[backend] user connected: %s (%s)", ws.User, ws.WalletAddress))
 	return nil
 }
 

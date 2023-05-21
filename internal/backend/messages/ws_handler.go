@@ -64,18 +64,31 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 				panic("world not found")
 			}
 
-			t := w.GetTableByName("Match")
-			if t != nil {
-				ret := []string{}
-				for k := range *t.Rows {
-					// TODO: directly encode keys as hex strings
-					ret = append(ret, hexutil.Encode([]byte(k)))
+			matchData := g.Database.GetBoardStatus(WorldID, ws.WalletAddress)
+			// TODO: save the user and wallet somewhere
+			matchData.PlayerOneUsermane = "user1"
+			matchData.PlayerTwoUsermane = "user2"
+			if matchData != nil {
+				msgToSend := BoardStatus{MsgType: "boardstatus", Status: *matchData}
+				logger.LogDebug(fmt.Sprintf("[backend] sending match info %s to %s", matchData.MatchID, ws.User))
+				err := ws.Conn.WriteJSON(msgToSend)
+				if err != nil {
+					panic("could not send the board status")
 				}
-				msg := MatchList{MsgType: "matchlist", Matches: ret}
-				ws.Conn.WriteJSON(msg)
-				logger.LogDebug(fmt.Sprintf("[backend] sending %d active matches", len(ret)))
+			} else {
+				t := w.GetTableByName("Match")
+				if t != nil {
+					ret := []string{}
+					for k := range *t.Rows {
+						ret = append(ret, k)
+					}
+					msg := MatchList{MsgType: "matchlist", Matches: ret}
+					ws.Conn.WriteJSON(msg)
+					logger.LogDebug(fmt.Sprintf("[backend] sending %d active matches", len(ret)))
+				}
 			}
 			// index, ok := g.WalletIndex[ws.user]
+
 			// _, ok := g.WalletIndex[ws.User]
 			// if ok {
 			// 	// game := g.Games[index]
@@ -86,6 +99,41 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 			// 	// }
 			// 	// fmt.Println("send all the games active")
 			// }
+
+		case "placecard":
+			if ws.Authenticated == false {
+				return
+			}
+
+			logger.LogDebug("[backend] processing place card request")
+
+			var msg PlaceCard
+			err := json.Unmarshal(p, &msg)
+			if err != nil {
+				logger.LogError(fmt.Sprintf("[backend] error decoding place card message: %s", err))
+				return
+			}
+
+			id, err := hexutil.Decode(msg.CardID)
+			if err != nil {
+				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to place card: %s", err))
+				return
+			}
+
+			if len(id) != 32 {
+				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to place card: invalid length"))
+				return
+			}
+
+			// It must be array instead of slice
+			var idArray [32]byte
+			copy(idArray[:], id)
+
+			err = txbuilder.SendTransaction(ws.WalletID, "placecard", idArray, uint32(msg.X), uint32(msg.Y))
+			if err != nil {
+				// TODO: send response saying that the game could not be created
+				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to place card: %s", err))
+			}
 
 		case "creatematch":
 			if ws.Authenticated == false {

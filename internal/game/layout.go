@@ -75,6 +75,17 @@ func GameLayout(g *gocui.Gui) error {
 	); err != nil {
 		return err
 	}
+	if err := notifications(
+		ViewPosition{
+			startX: leftOffset + 25,
+			startY: boardHeight,
+			endX:   boardWidth,
+			endY:   boardHeight + 5,
+		},
+		g,
+	); err != nil {
+		return err
+	}
 
 	return nil
 }

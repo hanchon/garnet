@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/hanchon/garnet/internal/gui"
 )
 
@@ -35,8 +34,8 @@ func processTable(ret *[]string, vT *Table) {
 	*ret = append(*ret, fmt.Sprintf("\u2727 Table %s", vT.Metadata.TableName))
 	*ret = append(*ret, "  \u274a Rows:")
 	for kR, vR := range *vT.Rows {
-		key := hexutil.Encode([]byte(kR))
-		*ret = append(*ret, fmt.Sprintf("    \u2609 ID    : %s", key))
+		// key := hexutil.Encode([]byte(kR))
+		*ret = append(*ret, fmt.Sprintf("    \u2609 ID    : %s", kR))
 		*ret = append(*ret, fmt.Sprintf("      Values:"))
 		for _, b := range vR {
 			*ret = append(*ret, fmt.Sprintf("          \u26ad  %s", b.String()))

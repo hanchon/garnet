@@ -81,7 +81,7 @@ contract JoinMatchSystem is System {
         bytes32 player2 = addressToEntityKey(_msgSender());
         require(PlayerTwo.get(key) == 0, "player 2 already set");
         // TODO: uncomment this so the player 2 is not the same as player 1
-        // require(player2 != player1, "player 1 and 2 must be different");
+        require(player2 != player1, "player 1 and 2 must be different");
         PlayerTwo.set(key, player2);
 
         // Board config

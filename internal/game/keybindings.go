@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hanchon/garnet/internal/backend/messages"
+	"github.com/hanchon/garnet/internal/logger"
 	"github.com/jroimartin/gocui"
 )
 
@@ -17,10 +19,14 @@ func (gs *GameState) GameKeybindings(g *gocui.Gui) error {
 	for i := 0; i <= 9; i = i + 1 {
 		for j := 0; j <= 9; j = j + 1 {
 			key := fmt.Sprintf("%s%d%d", boardViewName, i, j)
-			if err := g.SetKeybinding(key, gocui.MouseLeft, gocui.ModNone, showMovementPlaces); err != nil {
+			if err := g.SetKeybinding(key, gocui.MouseLeft, gocui.ModNone, gs.showMovementPlaces); err != nil {
 				return err
 			}
 		}
+	}
+
+	if err := g.SetKeybinding(playerActionsViewName, gocui.MouseLeft, gocui.ModNone, gs.selectCardFromPlayerActions); err != nil {
+		return err
 	}
 
 	// // Create game
@@ -28,9 +34,62 @@ func (gs *GameState) GameKeybindings(g *gocui.Gui) error {
 	// 	return err
 	// }
 
-	// if err := g.SetKeybinding("msg", gocui.MouseLeft, gocui.ModNone, delMsg); err != nil {
-	// 	return err
+	if err := g.SetKeybinding("msg", gocui.MouseLeft, gocui.ModNone, delMsg); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (gs *GameState) selectCardFromPlayerActions(g *gocui.Gui, v *gocui.View) error {
+	_, cy := v.Cursor()
+	if cy < 3 || cy > 8 {
+		return nil
+	}
+	cardType := cy - 3
+	userCards := gs.GetUserCards()
+	for _, card := range userCards {
+		if card.Type == int64(cardType) {
+			gs.UnitSelected = card.ID
+		}
+	}
+
+	gs.ui.Update(func(g *gocui.Gui) error {
+		err := gs.updateCardInfo()
+		if err != nil {
+			return err
+		}
+
+		err = gs.updatePlayerActions()
+		if err != nil {
+			return err
+		}
+		// TODO: make sure that the card was not already summoned
+		// Make sure we have at least 3 mana
+		gs.CurrentAction = SummonAction
+		for x := int64(0); x <= 9; x++ {
+			for y := int64(0); y <= 1; y++ {
+				if x != 4 && x != 5 {
+					setBackgroundBoardPosition(x, y, gocui.ColorCyan, gs.ui)
+				}
+			}
+		}
+
+		return nil
+	})
+	// maxX, maxY := g.Size()
+	// if v, err := g.SetView("msg", maxX/2-10, maxY/2, maxX/2+10, maxY/2+2); err != nil {
+	// 	if err != gocui.ErrUnknownView {
+	// 		return err
+	// 	}
+	// 	fmt.Fprintln(v, )
 	// }
+	return nil
+}
+
+func delMsg(g *gocui.Gui, v *gocui.View) error {
+	if err := g.DeleteView("msg"); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -58,7 +117,7 @@ func (gs *GameState) clickOnGameActions(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func showMovementPlaces(g *gocui.Gui, v *gocui.View) error {
+func (gs *GameState) showMovementPlaces(g *gocui.Gui, v *gocui.View) error {
 	xy := strings.Replace(v.Name(), "board", "", 1)
 	x, err := strconv.ParseInt(string(xy[0]), 10, 64)
 	if err != nil {
@@ -69,7 +128,24 @@ func showMovementPlaces(g *gocui.Gui, v *gocui.View) error {
 		return fmt.Errorf("could not parse y")
 	}
 
-	drawMovementPlaces(x, y, 3, g)
+	if gs.CurrentAction == SummonAction {
+		if v.BgColor == gocui.ColorCyan {
+			// Summon available
+			msg := messages.PlaceCard{
+				MsgType: "placecard",
+				CardID:  gs.UnitSelected,
+				X:       x,
+				Y:       y,
+			}
+			err := gs.Ws.WriteJSON(msg)
+			if err != nil {
+				logger.LogError(fmt.Sprintf("[client] could not send place card message: %s", err))
+			}
+			// TODO: unselect all squares and unselec card
+		}
+	} else {
+		drawMovementPlaces(x, y, 3, g)
+	}
 
 	// maxX, maxY := g.Size()
 	// if v2, err := g.SetView("msg", maxX/2-10, maxY/2, maxX/2+10, maxY/2+2); err != nil {

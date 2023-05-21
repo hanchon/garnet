@@ -30,18 +30,18 @@ func board(pos ViewPosition, g *gocui.Gui) error {
 		endY := offsetY + mulY
 		for i := 0; i <= boardLimitX; i = i + 1 {
 			for j := 0; j <= boardLimitY; j = j + 1 {
-				if v, err := g.SetView(fmt.Sprintf("%s%d%d", boardViewName, i, j), offsetX, offsetY, endX, endY); err != nil {
+				if v, err := g.SetView(fmt.Sprintf("%s%d%d", boardViewName, j, i), offsetX, offsetY, endX, endY); err != nil {
 					if err != gocui.ErrUnknownView {
 						return err
 					}
-					if j == 0 && i == 0 {
-						fmt.Fprintln(v, "10\u26A1")
-						fmt.Fprintln(v, "     ♖")
-					}
-					if j == 0 && i == 1 {
-						fmt.Fprintf(v, "%d %s\n", 10, gui.ColorRed("♥"))
-						fmt.Fprintln(v, "     P")
-					}
+					// if j == 0 && i == 0 {
+					// 	fmt.Fprintln(v, "10\u26A1")
+					// 	fmt.Fprintln(v, "     ♖")
+					// }
+					// if j == 0 && i == 1 {
+					// 	fmt.Fprintf(v, "%d %s\n", 10, gui.ColorRed("♥"))
+					// 	fmt.Fprintln(v, "     P")
+					// }
 					drawBase(10, 5, j, i, v)
 
 				}

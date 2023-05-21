@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 
+	"github.com/ethereum/go-ethereum/accounts"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -16,20 +17,29 @@ var mnemonic = "eternal envelope hat fame output noble roast screen bulk mind be
 var worldAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
 var endpoint = "http://localhost:8545"
 
-func SendTransaction(accountID int, message string, args ...interface{}) error {
+func GetWallet(accountID int) (*hdwallet.Wallet, accounts.Account, error) {
 	wallet, err := hdwallet.NewFromMnemonic(mnemonic)
 	if err != nil {
-		return err
+		return nil, accounts.Account{}, err
 	}
 
 	path := hdwallet.MustParseDerivationPath(fmt.Sprintf("m/44'/60'/0'/0/%d", accountID))
 	account, err := wallet.Derive(path, false)
 	if err != nil {
+		return nil, accounts.Account{}, err
+	}
+	return wallet, account, nil
+}
+
+func SendTransaction(accountID int, message string, args ...interface{}) error {
+	// Generate the wallet
+	wallet, account, err := GetWallet(accountID)
+	if err != nil {
 		return err
 	}
 
 	// Get coins
-	err = faucet(account.Address.Hex())
+	err = Faucet(account.Address.Hex())
 	if err != nil {
 		return err
 	}

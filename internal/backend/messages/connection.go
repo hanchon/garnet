@@ -17,6 +17,7 @@ type WebSocketContainer struct {
 	Authenticated bool
 	User          string
 	WalletID      int
+	WalletAddress string
 	Conn          *websocket.Conn
 }
 
