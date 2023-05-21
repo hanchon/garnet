@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/hanchon/garnet/internal/backend/messages"
 	"github.com/jroimartin/gocui"
 )
 
@@ -40,13 +39,6 @@ func (gs *GameState) clickOnGameActions(g *gocui.Gui, v *gocui.View) error {
 	if l, err := v.Line(cy); err == nil {
 		if strings.Contains(l, "CREATE") {
 			// CREATE GAME
-			gs.Ws = InitWsConnection(gs)
-			msg := messages.ConnectMessage{
-				MsgType:  "connect",
-				User:     "user1",
-				Password: "password1",
-			}
-			gs.Ws.WriteJSON(msg)
 		}
 
 		if strings.Contains(l, "QUIT") {

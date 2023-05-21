@@ -36,6 +36,7 @@ type GameState struct {
 	MatchState           *MatchState
 	ListOfAvailableGames []string
 	Ws                   *websocket.Conn
+	Connected            bool
 	Username             string
 	Password             string
 	// UI
@@ -90,6 +91,7 @@ func NewGameState(ui *gocui.Gui, username string, password string) *GameState {
 		MatchState:           nil,
 		ListOfAvailableGames: testData,
 		Ws:                   nil,
+		Connected:            false,
 		Username:             username,
 		Password:             password,
 		// UI
@@ -120,12 +122,12 @@ func InitWsConnection(gameState *GameState) *websocket.Conn {
 			if err != nil {
 				//  TODO: remove connection from gameState
 				run = false
+				gameState.Connected = false
 				panic(err)
 				// panic("could not decode message")
 			}
 			if strings.Contains(string(v), "connected") {
-				msg := `{"msgtype":"creatematch"}`
-				c.WriteMessage(websocket.TextMessage, []byte(msg))
+				gameState.Connected = true
 			}
 			if strings.Contains(string(v), "matchlist") {
 				var msg messages.MatchList
@@ -136,8 +138,6 @@ func InitWsConnection(gameState *GameState) *websocket.Conn {
 				}
 				gameState.ListOfAvailableGames = msg.Matches
 			}
-			// values.AddValue(msg)
-			// textArea.TextLines = values.ToStringList()
 		}
 	}()
 

@@ -10,6 +10,11 @@ type ConnectMessage struct {
 	Password string `json:"password"`
 }
 
+type JoinMatch struct {
+	MsgType string `json:"msgtype"`
+	MatchID string `json:"id"`
+}
+
 type MatchList struct {
 	MsgType string   `json:"msgtype"`
 	Matches []string `json:"matches"`

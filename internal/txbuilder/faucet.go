@@ -37,7 +37,7 @@ func faucet(addr string) error {
 	}
 
 	value := big.NewInt(1000000000000000000) // in wei (1 eth)
-	gasLimit := uint64(21000)                // in units
+	gasLimit := uint64(100000)               // in units
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
 		return err

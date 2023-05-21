@@ -46,7 +46,7 @@ func SendTransaction(accountID int, message string, args ...interface{}) error {
 	}
 
 	value := big.NewInt(0)
-	gasLimit := uint64(210000)
+	gasLimit := uint64(20000000)
 	gasPrice, err := client.SuggestGasPrice(context.Background())
 	if err != nil {
 		return err
@@ -54,7 +54,7 @@ func SendTransaction(accountID int, message string, args ...interface{}) error {
 
 	var data []byte
 	if len(args) > 0 {
-		data, err = IWorldABI.Pack(message, args)
+		data, err = IWorldABI.Pack(message, args...)
 		if err != nil {
 			return err
 		}

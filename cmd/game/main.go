@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/hanchon/garnet/internal/backend/messages"
 	"github.com/hanchon/garnet/internal/game"
 	"github.com/jroimartin/gocui"
 )
@@ -27,6 +28,14 @@ func main() {
 	g.SetManagerFunc(game.WelcomeScreenLayout)
 
 	state := game.NewGameState(g, os.Args[1], os.Args[2])
+
+	state.Ws = game.InitWsConnection(state)
+	msg := messages.ConnectMessage{
+		MsgType:  "connect",
+		User:     state.Username,
+		Password: state.Password,
+	}
+	state.Ws.WriteJSON(msg)
 
 	if err := state.WelcomeScreenKeybindings(g); err != nil {
 		log.Panicln(err)

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/gorilla/websocket"
 	"github.com/hanchon/garnet/internal/logger"
 	"github.com/hanchon/garnet/internal/txbuilder"
@@ -67,7 +68,8 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 			if t != nil {
 				ret := []string{}
 				for k := range *t.Rows {
-					ret = append(ret, k)
+					// TODO: directly encode keys as hex strings
+					ret = append(ret, hexutil.Encode([]byte(k)))
 				}
 				msg := MatchList{MsgType: "matchlist", Matches: ret}
 				ws.Conn.WriteJSON(msg)
@@ -93,6 +95,44 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 			if err != nil {
 				// TODO: send response saying that the game could not be created
 				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to creatematch: %s", err))
+			}
+
+		case "joinmatch":
+			if ws.Authenticated == false {
+				return
+			}
+			logger.LogDebug("[backend] processing join match request")
+
+			var msg JoinMatch
+			err := json.Unmarshal(p, &msg)
+			if err != nil {
+				logger.LogError(fmt.Sprintf("[backend] error decoding join match message: %s", err))
+				return
+			}
+
+			logger.LogDebug(fmt.Sprintf("[backend] creating join match tx: %s", msg.MatchID))
+
+			id, err := hexutil.Decode(msg.MatchID)
+			if err != nil {
+				// TODO: send response saying that the game could not be created
+				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to join match: %s", err))
+				return
+			}
+
+			if len(id) != 32 {
+				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to join match: invalid length"))
+				return
+			}
+
+			// It must be array instead of slice
+			var idArray [32]byte
+			copy(idArray[:], id)
+
+			err = txbuilder.SendTransaction(ws.WalletID, "joinmatch", idArray)
+			if err != nil {
+				// TODO: send response saying that the game could not be created
+				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to join match: %s", err))
+				return
 			}
 
 		case "getmatchstatus":
