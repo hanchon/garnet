@@ -2,6 +2,7 @@ package game
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/hanchon/garnet/internal/gui"
 	"github.com/jroimartin/gocui"
@@ -41,42 +42,8 @@ func board(pos ViewPosition, g *gocui.Gui) error {
 						fmt.Fprintf(v, "%d %s\n", 10, gui.ColorRed("♥"))
 						fmt.Fprintln(v, "     P")
 					}
+					drawBase(10, 5, j, i, v)
 
-					// Player 1 base
-					if j == 4 && i == 0 {
-						fmt.Fprintf(v, "%s%s%s%s%s\n", "10", drawHeart(), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"))
-						fmt.Fprintf(v, "%s%s%s%s%s%s\n", gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"))
-					}
-					if j == 4 && i == 1 {
-						fmt.Fprintf(v, "%s%s%s%s%s%s\n", gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"))
-						fmt.Fprintf(v, "%s%s%s%s%s%s\n", gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"))
-					}
-					if j == 5 && i == 0 {
-						fmt.Fprintf(v, "%s%s%s%s%s%s\n", gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"))
-						fmt.Fprintf(v, "%s%s%s%s%s%s\n", gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"))
-					}
-					if j == 5 && i == 1 {
-						fmt.Fprintf(v, "%s%s%s%s%s%s\n", gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"))
-						fmt.Fprintf(v, "%s%s%s%s%s%s\n", gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"), gui.ColorGreen("⛫"))
-					}
-
-					// Player 2 base
-					if j == 4 && i == 8 {
-						fmt.Fprintf(v, "%s%s%s%s%s\n", "10", drawHeart(), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"))
-						fmt.Fprintf(v, "%s%s%s%s%s%s\n", gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"))
-					}
-					if j == 4 && i == 9 {
-						fmt.Fprintf(v, "%s%s%s%s%s%s\n", gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"))
-						fmt.Fprintf(v, "%s%s%s%s%s%s\n", gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"))
-					}
-					if j == 5 && i == 8 {
-						fmt.Fprintf(v, "%s%s%s%s%s%s\n", gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"))
-						fmt.Fprintf(v, "%s%s%s%s%s%s\n", gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"))
-					}
-					if j == 5 && i == 9 {
-						fmt.Fprintf(v, "%s%s%s%s%s%s\n", gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"))
-						fmt.Fprintf(v, "%s%s%s%s%s%s\n", gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"), gui.ColorRed("⛫"))
-					}
 				}
 				offsetX = endX
 				endX = offsetX + mulX
@@ -88,4 +55,34 @@ func board(pos ViewPosition, g *gocui.Gui) error {
 		}
 	}
 	return nil
+}
+
+func lineWithCastles(enemy bool) string {
+	castle := gui.ColorGreen("⛫")
+	if enemy == true {
+		castle = gui.ColorRed("⛫")
+	}
+	return fmt.Sprintf("%s\n", strings.Repeat(castle, 6))
+}
+
+func drawBase(p1Health int, p2Health int, currentX int, currentY int, v *gocui.View) {
+	// Player 1 base
+	if currentX == 4 && currentY == 0 {
+		fmt.Fprintf(v, "%d/10%s\n", p1Health, drawHeart())
+		fmt.Fprintf(v, lineWithCastles(false))
+	}
+	if (currentX == 4 && currentY == 1) || (currentX == 5 && currentY == 0) || (currentX == 5 && currentY == 1) {
+		fmt.Fprintf(v, lineWithCastles(false))
+		fmt.Fprintf(v, lineWithCastles(false))
+	}
+
+	// Player 2 base
+	if currentX == 4 && currentY == 8 {
+		fmt.Fprintf(v, "%d/10%s\n", p2Health, drawHeart())
+		fmt.Fprintf(v, lineWithCastles(true))
+	}
+	if (currentX == 4 && currentY == 9) || (currentX == 5 && currentY == 8) || (currentX == 5 && currentY == 9) {
+		fmt.Fprintf(v, lineWithCastles(true))
+		fmt.Fprintf(v, lineWithCastles(true))
+	}
 }

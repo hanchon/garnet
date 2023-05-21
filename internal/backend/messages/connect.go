@@ -3,6 +3,8 @@ package messages
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/hanchon/garnet/internal/logger"
 )
 
 func connectMessage(ws *WebSocketContainer, registeredUsers map[string]User, p *[]byte) error {
@@ -24,7 +26,7 @@ func connectMessage(ws *WebSocketContainer, registeredUsers map[string]User, p *
 	ws.User = connectMsg.User
 	ws.Authenticated = true
 	ws.WalletID = v.WalletID
-	fmt.Println("connected")
+	logger.LogInfo(fmt.Sprintf("[backend] user connected: %s", ws.User))
 	return nil
 }
 

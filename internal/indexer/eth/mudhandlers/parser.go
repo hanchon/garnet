@@ -6,6 +6,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/hanchon/garnet/internal/indexer/data/mudhelpers"
+	"github.com/hanchon/garnet/internal/logger"
 )
 
 func ParseStoreSetRecord(log types.Log) (*mudhelpers.StorecoreStoreSetRecord, error) {
@@ -41,7 +42,7 @@ func UnpackLog(out interface{}, eventName string, log types.Log) error {
 	}
 	if len(log.Data) > 0 {
 		if err := mudhelpers.StorecoreAbi.UnpackIntoInterface(out, eventName, log.Data); err != nil {
-			fmt.Println("unpack into interface")
+			logger.LogError(fmt.Sprintf("failed to unpack into interface %s", err))
 			return err
 		}
 	}

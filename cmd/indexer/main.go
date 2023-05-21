@@ -27,18 +27,18 @@ func main() {
 	// Index the database
 	quit := false
 	database := data.NewDatabase()
-	go indexer.Process(&database, &quit)
+	go indexer.Process(database, &quit)
 
 	// Set up the GUI
 	ui := NewDebugUI()
 	defer ui.ui.Close()
 
-	go ui.ProcessIncomingData(&database)
-	go ui.ProcessBlockchainInfo(&database)
-	go ui.ProcessLatestEvents(&database)
+	go ui.ProcessIncomingData(database)
+	go ui.ProcessBlockchainInfo(database)
+	go ui.ProcessLatestEvents(database)
 
 	// Start the backend server
-	go backend.StartGorillaServer(port)
+	go backend.StartGorillaServer(port, database)
 
 	// Display the GUI
 	ui.Run()

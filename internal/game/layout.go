@@ -23,7 +23,11 @@ const (
 	boardHeight     = topOffset + 32
 )
 
-func Layout(g *gocui.Gui) error {
+func EmptyLayout(g *gocui.Gui) error {
+	return nil
+}
+
+func GameLayout(g *gocui.Gui) error {
 	if err := cardInfo(
 		ViewPosition{
 			startX: leftOffset,

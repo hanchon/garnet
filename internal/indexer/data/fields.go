@@ -7,7 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/hanchon/garnet/internal/indexer/data/mudhelpers"
-	"go.uber.org/zap"
+	"github.com/hanchon/garnet/internal/logger"
 )
 
 type FieldData interface {
@@ -153,7 +153,7 @@ func FieldWithDefautValue(schemaType mudhelpers.SchemaType) FieldData {
 	if schemaType >= mudhelpers.UINT8_ARRAY && schemaType <= mudhelpers.ADDRESS_ARRAY {
 		return NewArrayField(0)
 	} else {
-		fmt.Println("Unknown static field type", zap.String("type", schemaType.String()))
+		logger.LogError(fmt.Sprintf("Unknown static field type %s", schemaType.String()))
 		return nil
 	}
 

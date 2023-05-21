@@ -5,13 +5,16 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hanchon/garnet/internal/backend/messages"
 	"github.com/jroimartin/gocui"
 )
 
-func Keybindings(g *gocui.Gui) error {
+func (gs *GameState) GameKeybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
 		return err
 	}
+
+	// Board cells keybindings
 	for i := 0; i <= 9; i = i + 1 {
 		for j := 0; j <= 9; j = j + 1 {
 			key := fmt.Sprintf("%s%d%d", boardViewName, i, j)
@@ -21,9 +24,45 @@ func Keybindings(g *gocui.Gui) error {
 		}
 	}
 
+	// // Create game
+	// if err := g.SetKeybinding(gameActionsViewName, gocui.MouseLeft, gocui.ModNone, gs.clickOnGameActions); err != nil {
+	// 	return err
+	// }
+
 	// if err := g.SetKeybinding("msg", gocui.MouseLeft, gocui.ModNone, delMsg); err != nil {
 	// 	return err
 	// }
+	return nil
+}
+
+func (gs *GameState) clickOnGameActions(g *gocui.Gui, v *gocui.View) error {
+	_, cy := v.Cursor()
+	if l, err := v.Line(cy); err == nil {
+		if strings.Contains(l, "CREATE") {
+			// CREATE GAME
+			gs.Ws = InitWsConnection(gs)
+			msg := messages.ConnectMessage{
+				MsgType:  "connect",
+				User:     "user1",
+				Password: "password1",
+			}
+			gs.Ws.WriteJSON(msg)
+		}
+
+		if strings.Contains(l, "QUIT") {
+
+			g.SetManagerFunc(GameLayout)
+			if err := gs.GameKeybindings(g); err != nil {
+				panic(err)
+			}
+
+			// if err := g.DeleteView(gameActionsViewName); err != nil {
+			// 	return err
+			// }
+			// return nil
+
+		}
+	}
 	return nil
 }
 

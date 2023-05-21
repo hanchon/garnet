@@ -6,8 +6,10 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
+const gameActionsViewName = "gameActions"
+
 func gameActions(pos ViewPosition, g *gocui.Gui) error {
-	if v, err := g.SetView("gameActions", pos.startX, pos.startY, pos.endX, pos.endY); err != nil {
+	if v, err := g.SetView(gameActionsViewName, pos.startX, pos.startY, pos.endX, pos.endY); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}

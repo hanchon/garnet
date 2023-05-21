@@ -63,7 +63,7 @@ export default mudConfig({
 
   enums: {
     // Base MUST be the last value
-    CardTypes: ["Warrior1", "Warrior2", "Tank", "Mage", "Rogue1", "Rogue2", "Base"],
+    CardTypes: ["VaanStrife", "Felguard", "Sakura", "Freya", "Lyra", "Madmartigan", "Base"],
   },
   modules: [
     {

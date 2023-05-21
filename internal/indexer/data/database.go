@@ -41,6 +41,18 @@ type World struct {
 	Tables  map[string]*Table
 }
 
+// TODO: add a cache layer here to avoid the loop
+func (w *World) GetTableByName(tableName string) *Table {
+	for tableID := range w.Tables {
+		if w.Tables[tableID].Metadata != nil {
+			if w.Tables[tableID].Metadata.TableName == tableName {
+				return w.Tables[tableID]
+			}
+		}
+	}
+	return nil
+}
+
 func (w *World) GetTable(tableId string) *Table {
 	if table, ok := w.Tables[tableId]; ok {
 		return table
@@ -62,8 +74,8 @@ type Database struct {
 	ChainID    string
 }
 
-func NewDatabase() Database {
-	return Database{
+func NewDatabase() *Database {
+	return &Database{
 		Worlds:     map[string]*World{},
 		Events:     make([]Event, 0),
 		LastUpdate: time.Now(),

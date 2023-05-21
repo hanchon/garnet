@@ -25,3 +25,7 @@ func ColorYellow(value string) string {
 func ColorCyan(value string) string {
 	return fmt.Sprintf("\033[0;36m%s\033[0m", value)
 }
+
+func ColorLightCyan(value string) string {
+	return fmt.Sprintf("\033[1;36m%s\033[0m", value)
+}

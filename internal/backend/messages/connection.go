@@ -5,6 +5,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/hanchon/garnet/internal/backend/cors"
+	"github.com/hanchon/garnet/internal/indexer/data"
 )
 
 var upgrader = websocket.Upgrader{
@@ -30,9 +31,10 @@ type GlobalState struct {
 	WsSockets   map[string]*websocket.Conn
 	// Simulate users database: map[user]password
 	RegisteredUsers map[string]User
+	Database        *data.Database
 }
 
-func NewGlobalState() GlobalState {
+func NewGlobalState(database *data.Database) GlobalState {
 	return GlobalState{
 		WalletIndex: make(map[string]string),
 		WsSockets:   make(map[string]*websocket.Conn),
@@ -40,6 +42,7 @@ func NewGlobalState() GlobalState {
 			"user1": {Username: "user1", Password: "password1", WalletID: 0},
 			"user2": {Username: "user2", Password: "password2", WalletID: 1},
 		},
+		Database: database,
 	}
 }
 
