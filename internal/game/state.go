@@ -140,6 +140,7 @@ func InitWsConnection(gameState *GameState) *websocket.Conn {
 
 				gameState.BoardStatus = &msg.Status
 				gameState.lastBoardStatusUpdate = time.Now()
+				logger.LogInfo(fmt.Sprintf("[client] processing board status message at:%s", gameState.lastBoardStatusUpdate))
 			}
 		}
 	}()

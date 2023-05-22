@@ -49,11 +49,16 @@ func (gs *GameState) setAttackPosition(x, y int64, myUser string) {
 
 }
 
-func (gs *GameState) drawAttackPlaces(x, y int64) {
+func (gs *GameState) GetUserWallet() string {
 	myUser := gs.BoardStatus.PlayerTwo
 	if gs.Username == gs.BoardStatus.PlayerOneUsermane {
 		myUser = gs.BoardStatus.PlayerOne
 	}
+	return myUser
+}
+
+func (gs *GameState) drawAttackPlaces(x, y int64) {
+	myUser := gs.GetUserWallet()
 
 	gs.setAttackPosition(x, y+1, myUser)
 	gs.setAttackPosition(x, y-1, myUser)

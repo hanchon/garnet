@@ -146,15 +146,17 @@ func (gs *GameState) clickOnTable(g *gocui.Gui, v *gocui.View) error {
 			gui.ColorMagenta("\u2551"),
 		)
 	} else if cx > 88 && cx < 103 {
+		return nil
 
-		msg = fmt.Sprintf(
-			"%s%s%s%s%s",
-			gui.ColorMagenta("\u2551"),
-			strings.Repeat(" ", 46),
-			gui.ColorLightCyan("SPECTATING"),
-			strings.Repeat(" ", 46),
-			gui.ColorMagenta("\u2551"),
-		)
+		// TODO: spectate
+		// msg = fmt.Sprintf(
+		// 	"%s%s%s%s%s",
+		// 	gui.ColorMagenta("\u2551"),
+		// 	strings.Repeat(" ", 46),
+		// 	gui.ColorLightCyan("SPECTATING"),
+		// 	strings.Repeat(" ", 46),
+		// 	gui.ColorMagenta("\u2551"),
+		// )
 	}
 
 	if cy > 2 && cy < 13 {

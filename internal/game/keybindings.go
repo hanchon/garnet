@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/hanchon/garnet/internal/backend/messages"
+	"github.com/hanchon/garnet/internal/indexer/data"
 	"github.com/hanchon/garnet/internal/logger"
 	"github.com/jroimartin/gocui"
 )
@@ -56,10 +57,21 @@ func (gs *GameState) selectCardFromPlayerActions(g *gocui.Gui, v *gocui.View) er
 	}
 	cardType := cy - 3
 	userCards := gs.GetUserCards()
+	currentCard := data.Card{ID: ""}
+	totalSummons := 0
 	for _, card := range userCards {
 		if card.Type == int64(cardType) {
 			gs.UnitSelected = card.ID
+			currentCard = card
 		}
+		if card.Placed {
+			totalSummons++
+		}
+	}
+
+	if currentCard.ID == "" {
+		// The card should always exist
+		return nil
 	}
 
 	gs.ui.Update(func(g *gocui.Gui) error {
@@ -72,24 +84,56 @@ func (gs *GameState) selectCardFromPlayerActions(g *gocui.Gui, v *gocui.View) er
 		if err != nil {
 			return err
 		}
-		// TODO: make sure that the card was not already summoned
+
+		err = gs.updateBoard()
+		if err != nil {
+			return err
+		}
+
+		// Make sure that the card was not already summoned
+		if currentCard.Placed {
+			gs.selectCard(currentCard.Position.X, currentCard.Position.Y)
+			logger.LogDebug("[client] the card is already summoned")
+			return nil
+		}
+
 		// Make sure we have at least 3 mana
+		if gs.BoardStatus.CurrentMana < 3 {
+			logger.LogInfo("[client] not enough mana to summon")
+			return nil
+		}
+
+		// Make sure that is the player turn
+		// TODO: maybe it will not display the user summon rows after changing turns
+		if gs.GetUserWallet() != gs.BoardStatus.CurrentPlayer {
+			logger.LogInfo("[client] not your turn to summon")
+			return nil
+		}
+
+		// The user can only summon 3 cards
+		if totalSummons >= 3 {
+			logger.LogInfo("[client] all the summons were used")
+			return nil
+		}
+
 		gs.CurrentAction = SummonAction
+		yStart := int64(0)
+		yEnd := int64(1)
+		if gs.GetUserWallet() == gs.BoardStatus.PlayerTwo {
+			yStart = int64(8)
+			yEnd = int64(9)
+
+		}
+
 		for x := int64(0); x <= 9; x++ {
-			for y := int64(0); y <= 1; y++ {
+			for y := yStart; y <= yEnd; y++ {
 				gs.setMovementPosition(x, y, gocui.ColorCyan)
 			}
 		}
 
 		return nil
 	})
-	// maxX, maxY := g.Size()
-	// if v, err := g.SetView("msg", maxX/2-10, maxY/2, maxX/2+10, maxY/2+2); err != nil {
-	// 	if err != gocui.ErrUnknownView {
-	// 		return err
-	// 	}
-	// 	fmt.Fprintln(v, )
-	// }
+
 	return nil
 }
 
@@ -148,10 +192,17 @@ func (gs *GameState) boardMouseActionsHandler(g *gocui.Gui, v *gocui.View) error
 			if err != nil {
 				logger.LogError(fmt.Sprintf("[client] could not send place card message: %s", err))
 			}
-			// TODO: unselect all squares and unselec card
-			// gs.UnitSelected = ""
-			// gs.CurrentAction = EmptyAction
-			// gs.UpdateBoard()
+			gs.CurrentAction = EmptyAction
+			gs.UnitSelected = ""
+			gs.updateBoard()
+			gs.updatePlayerActions()
+			gs.updateCardInfo()
+		} else {
+			gs.CurrentAction = EmptyAction
+			gs.UnitSelected = ""
+			gs.updateBoard()
+			gs.updatePlayerActions()
+			gs.updateCardInfo()
 		}
 	} else if gs.CurrentAction == MoveAction {
 		if v.BgColor == gocui.ColorYellow {
@@ -202,13 +253,6 @@ func (gs *GameState) boardMouseActionsHandler(g *gocui.Gui, v *gocui.View) error
 		gs.selectCard(x, y)
 	}
 
-	// maxX, maxY := g.Size()
-	// if v2, err := g.SetView("msg", maxX/2-10, maxY/2, maxX/2+10, maxY/2+2); err != nil {
-	// 	if err != gocui.ErrUnknownView {
-	// 		return err
-	// 	}
-	// 	fmt.Fprintf(v2, "%s", v.Name())
-	// }
 	return nil
 }
 

@@ -123,7 +123,6 @@ func (db *Database) AddRow(table *Table, key []byte, fields *[]Field) {
 	// TODO: add locks here
 	(*table.Rows)[keyAsString] = *fields
 	db.AddEvent(table.Metadata.TableName, keyAsString, fields)
-	db.LastUpdate = time.Now()
 }
 
 func (db *Database) SetField(table *Table, key []byte, event *mudhelpers.StorecoreStoreSetField) {
@@ -148,7 +147,6 @@ func (db *Database) SetField(table *Table, key []byte, event *mudhelpers.Storeco
 	}
 
 	db.AddEvent(table.Metadata.TableName, keyAsString, fields)
-	db.LastUpdate = time.Now()
 }
 
 func (db *Database) DeleteRow(table *Table, key []byte) {
@@ -159,5 +157,4 @@ func (db *Database) DeleteRow(table *Table, key []byte) {
 		delete((*table.Rows), keyAsString)
 	}
 	db.AddEvent(table.Metadata.TableName, keyAsString, nil)
-	db.LastUpdate = time.Now()
 }
