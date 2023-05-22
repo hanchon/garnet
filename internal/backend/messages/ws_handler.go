@@ -57,7 +57,7 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 
 			logger.LogDebug(fmt.Sprintf("[backend] senging message: %s", msg))
 
-			g.WsSockets[ws.User] = ws.Conn
+			g.WsSockets[ws.User] = ws
 
 			w, ok := g.Database.Worlds[WorldID]
 			if !ok {
@@ -65,10 +65,10 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 			}
 
 			matchData := g.Database.GetBoardStatus(WorldID, ws.WalletAddress)
-			// TODO: save the user and wallet somewhere
-			matchData.PlayerOneUsermane = "user1"
-			matchData.PlayerTwoUsermane = "user2"
 			if matchData != nil {
+				// TODO: save the user and wallet somewhere
+				matchData.PlayerOneUsermane = "user1"
+				matchData.PlayerTwoUsermane = "user2"
 				msgToSend := BoardStatus{MsgType: "boardstatus", Status: *matchData}
 				logger.LogDebug(fmt.Sprintf("[backend] sending match info %s to %s", matchData.MatchID, ws.User))
 				err := ws.Conn.WriteJSON(msgToSend)
