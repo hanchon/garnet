@@ -5,14 +5,25 @@ pragma solidity >=0.8.0;
 
 import { IBaseWorld } from "@latticexyz/world/src/interfaces/IBaseWorld.sol";
 
+import { IAttackSystem } from "./IAttackSystem.sol";
 import { ICreateMatchSystem } from "./ICreateMatchSystem.sol";
+import { IEndTurnSystem } from "./IEndTurnSystem.sol";
 import { IJoinMatchSystem } from "./IJoinMatchSystem.sol";
+import { IMoveCardSystem } from "./IMoveCardSystem.sol";
 import { IPlaceCardSystem } from "./IPlaceCardSystem.sol";
 
 /**
  * The IWorld interface includes all systems dynamically added to the World
  * during the deploy process.
  */
-interface IWorld is IBaseWorld, ICreateMatchSystem, IJoinMatchSystem, IPlaceCardSystem {
+interface IWorld is
+  IBaseWorld,
+  IAttackSystem,
+  ICreateMatchSystem,
+  IEndTurnSystem,
+  IJoinMatchSystem,
+  IMoveCardSystem,
+  IPlaceCardSystem
+{
 
 }

@@ -30,12 +30,14 @@ import type {
 
 export interface IWorldInterface extends utils.Interface {
   functions: {
+    "attack(bytes32,uint32,uint32)": FunctionFragment;
     "call(bytes16,bytes16,bytes)": FunctionFragment;
     "creatematch()": FunctionFragment;
     "deleteRecord(bytes32,bytes32[])": FunctionFragment;
     "deleteRecord(bytes16,bytes16,bytes32[])": FunctionFragment;
     "emitEphemeralRecord(bytes16,bytes16,bytes32[],bytes)": FunctionFragment;
     "emitEphemeralRecord(bytes32,bytes32[],bytes)": FunctionFragment;
+    "endturn(bytes32)": FunctionFragment;
     "getField(bytes32,bytes32[],uint8)": FunctionFragment;
     "getFieldLength(bytes32,bytes32[],uint8,bytes32)": FunctionFragment;
     "getFieldSlice(bytes32,bytes32[],uint8,bytes32,uint256,uint256)": FunctionFragment;
@@ -48,6 +50,7 @@ export interface IWorldInterface extends utils.Interface {
     "installRootModule(address,bytes)": FunctionFragment;
     "isStore()": FunctionFragment;
     "joinmatch(bytes32)": FunctionFragment;
+    "movecard(bytes32,uint32,uint32)": FunctionFragment;
     "placecard(bytes32,uint32,uint32)": FunctionFragment;
     "popFromField(bytes16,bytes16,bytes32[],uint8,uint256)": FunctionFragment;
     "popFromField(bytes32,bytes32[],uint8,uint256)": FunctionFragment;
@@ -70,18 +73,21 @@ export interface IWorldInterface extends utils.Interface {
     "setMetadata(bytes32,string,string[])": FunctionFragment;
     "setRecord(bytes16,bytes16,bytes32[],bytes)": FunctionFragment;
     "setRecord(bytes32,bytes32[],bytes)": FunctionFragment;
+    "updateCards(bytes32)": FunctionFragment;
     "updateInField(bytes32,bytes32[],uint8,uint256,bytes)": FunctionFragment;
     "updateInField(bytes16,bytes16,bytes32[],uint8,uint256,bytes)": FunctionFragment;
   };
 
   getFunction(
     nameOrSignatureOrTopic:
+      | "attack"
       | "call"
       | "creatematch"
       | "deleteRecord(bytes32,bytes32[])"
       | "deleteRecord(bytes16,bytes16,bytes32[])"
       | "emitEphemeralRecord(bytes16,bytes16,bytes32[],bytes)"
       | "emitEphemeralRecord(bytes32,bytes32[],bytes)"
+      | "endturn"
       | "getField"
       | "getFieldLength"
       | "getFieldSlice"
@@ -94,6 +100,7 @@ export interface IWorldInterface extends utils.Interface {
       | "installRootModule"
       | "isStore"
       | "joinmatch"
+      | "movecard"
       | "placecard"
       | "popFromField(bytes16,bytes16,bytes32[],uint8,uint256)"
       | "popFromField(bytes32,bytes32[],uint8,uint256)"
@@ -116,10 +123,19 @@ export interface IWorldInterface extends utils.Interface {
       | "setMetadata(bytes32,string,string[])"
       | "setRecord(bytes16,bytes16,bytes32[],bytes)"
       | "setRecord(bytes32,bytes32[],bytes)"
+      | "updateCards"
       | "updateInField(bytes32,bytes32[],uint8,uint256,bytes)"
       | "updateInField(bytes16,bytes16,bytes32[],uint8,uint256,bytes)"
   ): FunctionFragment;
 
+  encodeFunctionData(
+    functionFragment: "attack",
+    values: [
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
+  ): string;
   encodeFunctionData(
     functionFragment: "call",
     values: [
@@ -160,6 +176,10 @@ export interface IWorldInterface extends utils.Interface {
       PromiseOrValue<BytesLike>[],
       PromiseOrValue<BytesLike>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "endturn",
+    values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
     functionFragment: "getField",
@@ -229,6 +249,14 @@ export interface IWorldInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "joinmatch",
     values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "movecard",
+    values: [
+      PromiseOrValue<BytesLike>,
+      PromiseOrValue<BigNumberish>,
+      PromiseOrValue<BigNumberish>
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "placecard",
@@ -414,6 +442,10 @@ export interface IWorldInterface extends utils.Interface {
     ]
   ): string;
   encodeFunctionData(
+    functionFragment: "updateCards",
+    values: [PromiseOrValue<BytesLike>]
+  ): string;
+  encodeFunctionData(
     functionFragment: "updateInField(bytes32,bytes32[],uint8,uint256,bytes)",
     values: [
       PromiseOrValue<BytesLike>,
@@ -435,6 +467,7 @@ export interface IWorldInterface extends utils.Interface {
     ]
   ): string;
 
+  decodeFunctionResult(functionFragment: "attack", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "call", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "creatematch",
@@ -456,6 +489,7 @@ export interface IWorldInterface extends utils.Interface {
     functionFragment: "emitEphemeralRecord(bytes32,bytes32[],bytes)",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "endturn", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "getField", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getFieldLength",
@@ -492,6 +526,7 @@ export interface IWorldInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "isStore", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "joinmatch", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "movecard", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "placecard", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "popFromField(bytes16,bytes16,bytes32[],uint8,uint256)",
@@ -575,6 +610,10 @@ export interface IWorldInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "setRecord(bytes32,bytes32[],bytes)",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateCards",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -683,6 +722,13 @@ export interface IWorld extends BaseContract {
   removeListener: OnEvent<this>;
 
   functions: {
+    attack(
+      cardKey: PromiseOrValue<BytesLike>,
+      newX: PromiseOrValue<BigNumberish>,
+      newY: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     call(
       namespace: PromiseOrValue<BytesLike>,
       name: PromiseOrValue<BytesLike>,
@@ -719,6 +765,11 @@ export interface IWorld extends BaseContract {
       table: PromiseOrValue<BytesLike>,
       key: PromiseOrValue<BytesLike>[],
       data: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    endturn(
+      key: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -793,6 +844,13 @@ export interface IWorld extends BaseContract {
 
     joinmatch(
       key: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
+    movecard(
+      cardKey: PromiseOrValue<BytesLike>,
+      newX: PromiseOrValue<BigNumberish>,
+      newY: PromiseOrValue<BigNumberish>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
@@ -962,6 +1020,11 @@ export interface IWorld extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    updateCards(
+      matchKey: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     "updateInField(bytes32,bytes32[],uint8,uint256,bytes)"(
       table: PromiseOrValue<BytesLike>,
       key: PromiseOrValue<BytesLike>[],
@@ -981,6 +1044,13 @@ export interface IWorld extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
   };
+
+  attack(
+    cardKey: PromiseOrValue<BytesLike>,
+    newX: PromiseOrValue<BigNumberish>,
+    newY: PromiseOrValue<BigNumberish>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
 
   call(
     namespace: PromiseOrValue<BytesLike>,
@@ -1018,6 +1088,11 @@ export interface IWorld extends BaseContract {
     table: PromiseOrValue<BytesLike>,
     key: PromiseOrValue<BytesLike>[],
     data: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  endturn(
+    key: PromiseOrValue<BytesLike>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1092,6 +1167,13 @@ export interface IWorld extends BaseContract {
 
   joinmatch(
     key: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
+  movecard(
+    cardKey: PromiseOrValue<BytesLike>,
+    newX: PromiseOrValue<BigNumberish>,
+    newY: PromiseOrValue<BigNumberish>,
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
@@ -1261,6 +1343,11 @@ export interface IWorld extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  updateCards(
+    matchKey: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   "updateInField(bytes32,bytes32[],uint8,uint256,bytes)"(
     table: PromiseOrValue<BytesLike>,
     key: PromiseOrValue<BytesLike>[],
@@ -1281,6 +1368,13 @@ export interface IWorld extends BaseContract {
   ): Promise<ContractTransaction>;
 
   callStatic: {
+    attack(
+      cardKey: PromiseOrValue<BytesLike>,
+      newX: PromiseOrValue<BigNumberish>,
+      newY: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     call(
       namespace: PromiseOrValue<BytesLike>,
       name: PromiseOrValue<BytesLike>,
@@ -1315,6 +1409,11 @@ export interface IWorld extends BaseContract {
       table: PromiseOrValue<BytesLike>,
       key: PromiseOrValue<BytesLike>[],
       data: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    endturn(
+      key: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1392,6 +1491,13 @@ export interface IWorld extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    movecard(
+      cardKey: PromiseOrValue<BytesLike>,
+      newX: PromiseOrValue<BigNumberish>,
+      newY: PromiseOrValue<BigNumberish>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     placecard(
       cardKey: PromiseOrValue<BytesLike>,
       newX: PromiseOrValue<BigNumberish>,
@@ -1558,6 +1664,11 @@ export interface IWorld extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    updateCards(
+      matchKey: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     "updateInField(bytes32,bytes32[],uint8,uint256,bytes)"(
       table: PromiseOrValue<BytesLike>,
       key: PromiseOrValue<BytesLike>[],
@@ -1625,6 +1736,13 @@ export interface IWorld extends BaseContract {
   };
 
   estimateGas: {
+    attack(
+      cardKey: PromiseOrValue<BytesLike>,
+      newX: PromiseOrValue<BigNumberish>,
+      newY: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     call(
       namespace: PromiseOrValue<BytesLike>,
       name: PromiseOrValue<BytesLike>,
@@ -1661,6 +1779,11 @@ export interface IWorld extends BaseContract {
       table: PromiseOrValue<BytesLike>,
       key: PromiseOrValue<BytesLike>[],
       data: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
+    endturn(
+      key: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
@@ -1738,6 +1861,13 @@ export interface IWorld extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    movecard(
+      cardKey: PromiseOrValue<BytesLike>,
+      newX: PromiseOrValue<BigNumberish>,
+      newY: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     placecard(
       cardKey: PromiseOrValue<BytesLike>,
       newX: PromiseOrValue<BigNumberish>,
@@ -1904,6 +2034,11 @@ export interface IWorld extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    updateCards(
+      matchKey: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     "updateInField(bytes32,bytes32[],uint8,uint256,bytes)"(
       table: PromiseOrValue<BytesLike>,
       key: PromiseOrValue<BytesLike>[],
@@ -1925,6 +2060,13 @@ export interface IWorld extends BaseContract {
   };
 
   populateTransaction: {
+    attack(
+      cardKey: PromiseOrValue<BytesLike>,
+      newX: PromiseOrValue<BigNumberish>,
+      newY: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     call(
       namespace: PromiseOrValue<BytesLike>,
       name: PromiseOrValue<BytesLike>,
@@ -1961,6 +2103,11 @@ export interface IWorld extends BaseContract {
       table: PromiseOrValue<BytesLike>,
       key: PromiseOrValue<BytesLike>[],
       data: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    endturn(
+      key: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -2038,6 +2185,13 @@ export interface IWorld extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
+    movecard(
+      cardKey: PromiseOrValue<BytesLike>,
+      newX: PromiseOrValue<BigNumberish>,
+      newY: PromiseOrValue<BigNumberish>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
     placecard(
       cardKey: PromiseOrValue<BytesLike>,
       newX: PromiseOrValue<BigNumberish>,
@@ -2201,6 +2355,11 @@ export interface IWorld extends BaseContract {
       table: PromiseOrValue<BytesLike>,
       key: PromiseOrValue<BytesLike>[],
       data: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateCards(
+      matchKey: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 

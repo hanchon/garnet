@@ -87,18 +87,6 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 					logger.LogDebug(fmt.Sprintf("[backend] sending %d active matches", len(ret)))
 				}
 			}
-			// index, ok := g.WalletIndex[ws.user]
-
-			// _, ok := g.WalletIndex[ws.User]
-			// if ok {
-			// 	// game := g.Games[index]
-			// 	// json, _ := game.GameStatus()
-			// 	// state := fmt.Sprintf(`{"msgtype":"boardstate","value":%s,"id": "%s"}`, string(json), game.Id)
-			// 	// if writeMessage(ws.conn, &state) != nil {
-			// 	// 	return
-			// 	// }
-			// 	// fmt.Println("send all the games active")
-			// }
 
 		case "placecard":
 			if ws.Authenticated == false {
@@ -183,33 +171,113 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 				return
 			}
 
-		case "getmatchstatus":
-			{
-				if ws.Authenticated == false {
-					return
-				}
-				// id, err := getMatchStatus(&p)
-				// if err != nil {
-				// 	// TODO: kill the connectiong and remove this ws from the list
-				// 	return
-				// }
-				// if DummyData.MatchID == id {
-				// 	value, err := json.Marshal(RespMatchStatus{MsgType: "respmatchstatus", MatchData: DummyData})
-				// 	if err != nil {
-				// 		// TODO: kill the connectiong and remove this ws from the list
-				// 		return
-				// 	}
-				// 	if writeBytes(ws.conn, value) != nil {
-				// 		// TODO: kill the connectiong and remove this ws from the list
-				// 		return
-				// 	}
-				//
-				// 	return
-				// }
+		case "endturn":
+			if ws.Authenticated == false {
+				return
+			}
+			logger.LogDebug("[backend] processing endturn request")
+
+			var msg EndTurn
+			err := json.Unmarshal(p, &msg)
+			if err != nil {
+				logger.LogError(fmt.Sprintf("[backend] error decoding endturn message: %s", err))
+				return
+			}
+
+			logger.LogDebug(fmt.Sprintf("[backend] creating endturn tx: %s", msg.MatchID))
+
+			id, err := hexutil.Decode(msg.MatchID)
+			if err != nil {
+				// TODO: send response saying that the game could not be created
+				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to endturn: %s", err))
+				return
+			}
+
+			if len(id) != 32 {
+				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to endturn: invalid length"))
+				return
+			}
+
+			// It must be array instead of slice
+			var idArray [32]byte
+			copy(idArray[:], id)
+
+			err = txbuilder.SendTransaction(ws.WalletID, "endturn", idArray)
+			if err != nil {
+				// TODO: send response saying that the game could not be created
+				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to endturn: %s", err))
+				return
+			}
+
+		case "movecard":
+			if ws.Authenticated == false {
+				return
+			}
+
+			logger.LogDebug("[backend] processing move card request")
+
+			var msg MoveCard
+			err := json.Unmarshal(p, &msg)
+			if err != nil {
+				logger.LogError(fmt.Sprintf("[backend] error decoding move card message: %s", err))
+				return
+			}
+
+			id, err := hexutil.Decode(msg.CardID)
+			if err != nil {
+				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to move card: %s", err))
+				return
+			}
+
+			if len(id) != 32 {
+				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to move card: invalid length"))
+				return
+			}
+
+			// It must be array instead of slice
+			var idArray [32]byte
+			copy(idArray[:], id)
+
+			err = txbuilder.SendTransaction(ws.WalletID, "movecard", idArray, uint32(msg.X), uint32(msg.Y))
+			if err != nil {
+				// TODO: send response saying that the game could not be created
+				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to move card: %s", err))
+			}
+
+		case "attack":
+			if ws.Authenticated == false {
+				return
+			}
+
+			logger.LogDebug("[backend] processing attack request")
+
+			var msg Attack
+			err := json.Unmarshal(p, &msg)
+			if err != nil {
+				logger.LogError(fmt.Sprintf("[backend] error decoding attack message: %s", err))
+				return
+			}
+
+			id, err := hexutil.Decode(msg.CardID)
+			if err != nil {
+				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to attack: %s", err))
+				return
+			}
+
+			if len(id) != 32 {
+				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to attack: invalid length"))
+				return
+			}
+
+			// It must be array instead of slice
+			var idArray [32]byte
+			copy(idArray[:], id)
+
+			err = txbuilder.SendTransaction(ws.WalletID, "attack", idArray, uint32(msg.X), uint32(msg.Y))
+			if err != nil {
+				// TODO: send response saying that the game could not be created
+				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to attack: %s", err))
 			}
 		}
-
-		// print out that message for clarity
-		// fmt.Println(string(p))
 	}
 }

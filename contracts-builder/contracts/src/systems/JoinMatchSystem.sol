@@ -17,6 +17,7 @@ import {OwnedBy} from "../codegen/tables/OwnedBy.sol";
 import {UsedIn} from "../codegen/tables/UsedIn.sol";
 import {UnitType} from "../codegen/tables/UnitType.sol";
 import {AttackDamage} from "../codegen/tables/AttackDamage.sol";
+import {ActionReady} from "../codegen/tables/ActionReady.sol";
 import {MaxHp} from "../codegen/tables/MaxHp.sol";
 import {CurrentHp} from "../codegen/tables/CurrentHp.sol";
 import {MovementSpeed} from "../codegen/tables/MovementSpeed.sol";
@@ -38,6 +39,7 @@ contract JoinMatchSystem is System {
             MaxHp.set(cardKey, LibDefaults.health(CardTypes(j)));
             CurrentHp.set(cardKey, LibDefaults.health(CardTypes(j)));
             MovementSpeed.set(cardKey, LibDefaults.movement(CardTypes(j)));
+            ActionReady.set(cardKey, true);
         }
 
         bytes32 baseTR = bytes32(keccak256(abi.encodePacked(block.number, player, gasleft(), playerIndex + 1001)));

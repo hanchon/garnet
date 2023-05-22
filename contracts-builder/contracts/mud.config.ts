@@ -14,6 +14,18 @@ export default mudConfig({
       name: "placecard",
       openAccess: true,
     },
+    MoveCardSystem: {
+      name: "movecard",
+      openAccess: true,
+    },
+    AttackSystem:{
+      name: "attack",
+      openAccess: true,
+    },
+    EndTurnSystem: {
+      name: "endturn",
+      openAccess: true,
+    },
   },
   tables: {
     MapConfig: {
@@ -70,6 +82,11 @@ export default mudConfig({
       name: "KeysWithValueModule",
       root: true,
       args: [resolveTableId("Position")],
+    },
+    {
+      name: "KeysWithValueModule",
+      root: true,
+      args: [resolveTableId("UsedIn")],
     },
   ],
 });

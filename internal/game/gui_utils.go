@@ -1,8 +1,6 @@
 package game
 
 import (
-	"fmt"
-
 	"github.com/hanchon/garnet/internal/gui"
 	"github.com/jroimartin/gocui"
 )
@@ -27,8 +25,4 @@ func setBackgroundColor(viewName string, color gocui.Attribute, g *gocui.Gui) {
 	if err == nil {
 		view.BgColor = color
 	}
-}
-
-func setBackgroundBoardPosition(x, y int64, color gocui.Attribute, g *gocui.Gui) {
-	setBackgroundColor(fmt.Sprintf("%s%d%d", boardViewName, x, y), color, g)
 }

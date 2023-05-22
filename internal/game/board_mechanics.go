@@ -1,36 +1,96 @@
 package game
 
-import "github.com/jroimartin/gocui"
+import (
+	"fmt"
 
-func drawMovementPlaces(x, y int64, speed int64, g *gocui.Gui) {
+	"github.com/jroimartin/gocui"
+)
+
+func (gs *GameState) isValidPlaceToMove(x int64, y int64) bool {
+	if x == 4 && y == 0 || x == 5 && y == 0 || x == 4 && y == 1 || x == 5 && y == 1 || x == 4 && y == 8 || x == 5 && y == 8 || x == 4 && y == 9 || x == 5 && y == 9 {
+		// Bases
+		return false
+	}
+
+	for _, v := range gs.BoardStatus.Cards {
+		// Placed cards
+		if v.Position.X == x && v.Position.Y == y {
+			return false
+		}
+	}
+
+	return true
+}
+
+func (gs *GameState) setMovementPosition(x, y int64, color gocui.Attribute) {
+	if gs.isValidPlaceToMove(x, y) {
+		setBackgroundColor(fmt.Sprintf("%s%d%d", boardViewName, x, y), color, gs.ui)
+	}
+}
+
+func (gs *GameState) setAttackPosition(x, y int64, myUser string) {
+	// Bases
+	if myUser == gs.BoardStatus.PlayerOne {
+		if (x == 4 || x == 5) && (y == 8 || y == 9) {
+			setBackgroundColor(fmt.Sprintf("%s%d%d", boardViewName, x, y), gocui.ColorRed, gs.ui)
+		}
+	} else {
+		if (x == 4 || x == 5) && (y == 0 || y == 1) {
+			setBackgroundColor(fmt.Sprintf("%s%d%d", boardViewName, x, y), gocui.ColorRed, gs.ui)
+		}
+
+	}
+	for _, v := range gs.BoardStatus.Cards {
+		if v.Position.X == x && v.Position.Y == y && v.Owner != myUser {
+			setBackgroundColor(fmt.Sprintf("%s%d%d", boardViewName, x, y), gocui.ColorRed, gs.ui)
+			return
+		}
+	}
+
+}
+
+func (gs *GameState) drawAttackPlaces(x, y int64) {
+	myUser := gs.BoardStatus.PlayerTwo
+	if gs.Username == gs.BoardStatus.PlayerOneUsermane {
+		myUser = gs.BoardStatus.PlayerOne
+	}
+
+	gs.setAttackPosition(x, y+1, myUser)
+	gs.setAttackPosition(x, y-1, myUser)
+	gs.setAttackPosition(x+1, y, myUser)
+	gs.setAttackPosition(x-1, y, myUser)
+}
+
+func (gs *GameState) drawMovementPlaces(x, y int64, speed int64) {
+
 	if speed >= 1 {
-		setBackgroundBoardPosition(x, y+1, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x, y-1, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x+1, y, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x-1, y, gocui.ColorYellow, g)
+		gs.setMovementPosition(x, y+1, gocui.ColorYellow)
+		gs.setMovementPosition(x, y-1, gocui.ColorYellow)
+		gs.setMovementPosition(x+1, y, gocui.ColorYellow)
+		gs.setMovementPosition(x-1, y, gocui.ColorYellow)
 	}
 	if speed >= 2 {
-		setBackgroundBoardPosition(x+1, y+1, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x-1, y-1, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x+1, y-1, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x-1, y+1, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x, y+2, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x, y-2, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x+2, y, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x-2, y, gocui.ColorYellow, g)
+		gs.setMovementPosition(x+1, y+1, gocui.ColorYellow)
+		gs.setMovementPosition(x-1, y-1, gocui.ColorYellow)
+		gs.setMovementPosition(x+1, y-1, gocui.ColorYellow)
+		gs.setMovementPosition(x-1, y+1, gocui.ColorYellow)
+		gs.setMovementPosition(x, y+2, gocui.ColorYellow)
+		gs.setMovementPosition(x, y-2, gocui.ColorYellow)
+		gs.setMovementPosition(x+2, y, gocui.ColorYellow)
+		gs.setMovementPosition(x-2, y, gocui.ColorYellow)
 	}
 	if speed >= 3 {
-		setBackgroundBoardPosition(x+1, y+2, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x-1, y+2, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x+1, y-2, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x-1, y-2, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x+2, y-1, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x+2, y+1, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x-2, y+1, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x-2, y-1, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x, y+3, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x, y-3, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x+3, y, gocui.ColorYellow, g)
-		setBackgroundBoardPosition(x-3, y, gocui.ColorYellow, g)
+		gs.setMovementPosition(x+1, y+2, gocui.ColorYellow)
+		gs.setMovementPosition(x-1, y+2, gocui.ColorYellow)
+		gs.setMovementPosition(x+1, y-2, gocui.ColorYellow)
+		gs.setMovementPosition(x-1, y-2, gocui.ColorYellow)
+		gs.setMovementPosition(x+2, y-1, gocui.ColorYellow)
+		gs.setMovementPosition(x+2, y+1, gocui.ColorYellow)
+		gs.setMovementPosition(x-2, y+1, gocui.ColorYellow)
+		gs.setMovementPosition(x-2, y-1, gocui.ColorYellow)
+		gs.setMovementPosition(x, y+3, gocui.ColorYellow)
+		gs.setMovementPosition(x, y-3, gocui.ColorYellow)
+		gs.setMovementPosition(x+3, y, gocui.ColorYellow)
+		gs.setMovementPosition(x-3, y, gocui.ColorYellow)
 	}
 }

@@ -299,6 +299,29 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "bytes32",
+        name: "cardKey",
+        type: "bytes32",
+      },
+      {
+        internalType: "uint32",
+        name: "newX",
+        type: "uint32",
+      },
+      {
+        internalType: "uint32",
+        name: "newY",
+        type: "uint32",
+      },
+    ],
+    name: "attack",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "bytes16",
         name: "namespace",
         type: "bytes16",
@@ -420,6 +443,19 @@ const _abi = [
       },
     ],
     name: "emitEphemeralRecord",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "key",
+        type: "bytes32",
+      },
+    ],
+    name: "endturn",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -697,6 +733,29 @@ const _abi = [
       },
     ],
     name: "joinmatch",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "cardKey",
+        type: "bytes32",
+      },
+      {
+        internalType: "uint32",
+        name: "newX",
+        type: "uint32",
+      },
+      {
+        internalType: "uint32",
+        name: "newY",
+        type: "uint32",
+      },
+    ],
+    name: "movecard",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
@@ -1287,6 +1346,19 @@ const _abi = [
       },
     ],
     name: "setRecord",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "matchKey",
+        type: "bytes32",
+      },
+    ],
+    name: "updateCards",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

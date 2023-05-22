@@ -19,7 +19,7 @@ func (gs *GameState) GameKeybindings(g *gocui.Gui) error {
 	for i := 0; i <= 9; i = i + 1 {
 		for j := 0; j <= 9; j = j + 1 {
 			key := fmt.Sprintf("%s%d%d", boardViewName, i, j)
-			if err := g.SetKeybinding(key, gocui.MouseLeft, gocui.ModNone, gs.showMovementPlaces); err != nil {
+			if err := g.SetKeybinding(key, gocui.MouseLeft, gocui.ModNone, gs.boardMouseActionsHandler); err != nil {
 				return err
 			}
 		}
@@ -42,6 +42,15 @@ func (gs *GameState) GameKeybindings(g *gocui.Gui) error {
 
 func (gs *GameState) selectCardFromPlayerActions(g *gocui.Gui, v *gocui.View) error {
 	_, cy := v.Cursor()
+
+	// End turn
+	if cy == 10 {
+		logger.LogInfo(fmt.Sprintf("[client] sending end turn transaction for match %s", gs.BoardStatus.MatchID))
+		msg := messages.EndTurn{MsgType: "endturn", MatchID: gs.BoardStatus.MatchID}
+		gs.Ws.WriteJSON(msg)
+		return nil
+	}
+	// Select card checks
 	if cy < 3 || cy > 8 {
 		return nil
 	}
@@ -68,9 +77,7 @@ func (gs *GameState) selectCardFromPlayerActions(g *gocui.Gui, v *gocui.View) er
 		gs.CurrentAction = SummonAction
 		for x := int64(0); x <= 9; x++ {
 			for y := int64(0); y <= 1; y++ {
-				if x != 4 && x != 5 {
-					setBackgroundBoardPosition(x, y, gocui.ColorCyan, gs.ui)
-				}
+				gs.setMovementPosition(x, y, gocui.ColorCyan)
 			}
 		}
 
@@ -117,7 +124,7 @@ func (gs *GameState) clickOnGameActions(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func (gs *GameState) showMovementPlaces(g *gocui.Gui, v *gocui.View) error {
+func (gs *GameState) boardMouseActionsHandler(g *gocui.Gui, v *gocui.View) error {
 	xy := strings.Replace(v.Name(), "board", "", 1)
 	x, err := strconv.ParseInt(string(xy[0]), 10, 64)
 	if err != nil {
@@ -142,9 +149,57 @@ func (gs *GameState) showMovementPlaces(g *gocui.Gui, v *gocui.View) error {
 				logger.LogError(fmt.Sprintf("[client] could not send place card message: %s", err))
 			}
 			// TODO: unselect all squares and unselec card
+			// gs.UnitSelected = ""
+			// gs.CurrentAction = EmptyAction
+			// gs.UpdateBoard()
+		}
+	} else if gs.CurrentAction == MoveAction {
+		if v.BgColor == gocui.ColorYellow {
+			// Move
+			logger.LogInfo(fmt.Sprintf("[client] move card to pos"))
+			// TODO: this may fail if the user selects another card from the left table, make sure to clean the board background on unitselected changes
+			msg := messages.MoveCard{
+				MsgType: "movecard",
+				CardID:  gs.UnitSelected,
+				X:       x,
+				Y:       y,
+			}
+			err := gs.Ws.WriteJSON(msg)
+			if err != nil {
+				logger.LogError(fmt.Sprintf("[client] could not send move card message: %s", err))
+			}
+
+			gs.CurrentAction = EmptyAction
+			gs.UnitSelected = ""
+			gs.updateBoard()
+			gs.updatePlayerActions()
+			gs.updateCardInfo()
+		} else if v.BgColor == gocui.ColorRed {
+			// Move
+			logger.LogInfo(fmt.Sprintf("[client] attack to pos"))
+			// TODO: this may fail if the user selects another card from the left table, make sure to clean the board background on unitselected changes
+			msg := messages.Attack{
+				MsgType: "attack",
+				CardID:  gs.UnitSelected,
+				X:       x,
+				Y:       y,
+			}
+			err := gs.Ws.WriteJSON(msg)
+			if err != nil {
+				logger.LogError(fmt.Sprintf("[client] could not send attack message: %s", err))
+			}
+
+			gs.CurrentAction = EmptyAction
+			gs.UnitSelected = ""
+			gs.updateBoard()
+			gs.updatePlayerActions()
+			gs.updateCardInfo()
+		} else {
+			gs.CurrentAction = EmptyAction
+			gs.selectCard(x, y)
 		}
 	} else {
-		drawMovementPlaces(x, y, 3, g)
+		gs.selectCard(x, y)
 	}
 
 	// maxX, maxY := g.Size()
@@ -155,6 +210,31 @@ func (gs *GameState) showMovementPlaces(g *gocui.Gui, v *gocui.View) error {
 	// 	fmt.Fprintf(v2, "%s", v.Name())
 	// }
 	return nil
+}
+
+func (gs *GameState) selectCard(x int64, y int64) {
+	gs.updateBoard()
+
+	gs.UnitSelected = ""
+	for _, value := range gs.BoardStatus.Cards {
+		if value.Position.X == x && value.Position.Y == y {
+			gs.UnitSelected = value.ID
+			// Update tables
+			gs.updateCardInfo()
+			gs.updatePlayerActions()
+			// If the unit owner is the user, display the movement places
+			for _, card := range gs.GetUserCards() {
+				if card.ID == value.ID {
+					gs.CurrentAction = MoveAction
+					gs.drawMovementPlaces(x, y, card.MovementSpeed)
+					gs.drawAttackPlaces(x, y)
+					return
+				}
+			}
+		}
+	}
+	gs.updateCardInfo()
+	gs.updatePlayerActions()
 }
 
 func quit(g *gocui.Gui, v *gocui.View) error {

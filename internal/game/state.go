@@ -38,6 +38,7 @@ type MatchState struct {
 const (
 	EmptyAction  = ""
 	SummonAction = "summon"
+	MoveAction   = "move"
 )
 
 type GameState struct {

@@ -88,12 +88,39 @@ func drawBase(p1Health int, p2Health int, currentX int, currentY int, v *gocui.V
 	}
 }
 
+// func (gs *GameState) clearBoardBackground() error {
+// 	for i := 0; i <= boardLimitX; i = i + 1 {
+// 		for j := 0; j <= boardLimitY; j = j + 1 {
+// 			v, err := gs.ui.View(fmt.Sprintf("%s%d%d", boardViewName, i, j))
+// 			if err != nil {
+// 				return err
+// 			}
+// 			v.BgColor = gocui.ColorBlack
+// 		}
+// 	}
+// 	return nil
+// }
+
 func (gs *GameState) updateBoard() error {
 	userCards := gs.GetUserCards()
 
 	isPlayerOne := true
 	if gs.Username == gs.BoardStatus.PlayerTwoUsermane {
 		isPlayerOne = false
+	}
+	base1Hp := 0
+	base2Hp := 0
+
+	if gs.BoardStatus != nil {
+		for _, v := range gs.BoardStatus.Cards {
+			if v.Type == 6 {
+				if v.Owner == gs.BoardStatus.PlayerOne {
+					base1Hp = int(v.CurrentHp)
+				} else {
+					base2Hp = int(v.CurrentHp)
+				}
+			}
+		}
 	}
 
 	for i := 0; i <= boardLimitX; i = i + 1 {
@@ -102,8 +129,9 @@ func (gs *GameState) updateBoard() error {
 			if err != nil {
 				return err
 			}
+			v.BgColor = gocui.ColorDefault
 			v.Clear()
-			drawBase(10, 5, i, j, v, isPlayerOne)
+			drawBase(base1Hp, base2Hp, i, j, v, isPlayerOne)
 			// TODO: move the loop outside the other 2 loops
 			for _, card := range gs.BoardStatus.Cards {
 				if card.Position.X == int64(i) && card.Position.Y == int64(j) {

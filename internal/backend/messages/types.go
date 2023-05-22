@@ -17,7 +17,26 @@ type JoinMatch struct {
 	MatchID string `json:"id"`
 }
 
+type EndTurn struct {
+	MsgType string `json:"msgtype"`
+	MatchID string `json:"id"`
+}
+
 type PlaceCard struct {
+	MsgType string `json:"msgtype"`
+	CardID  string `json:"id"`
+	X       int64  `json:"x"`
+	Y       int64  `json:"y"`
+}
+
+type MoveCard struct {
+	MsgType string `json:"msgtype"`
+	CardID  string `json:"id"`
+	X       int64  `json:"x"`
+	Y       int64  `json:"y"`
+}
+
+type Attack struct {
 	MsgType string `json:"msgtype"`
 	CardID  string `json:"id"`
 	X       int64  `json:"x"`
