@@ -45,7 +45,7 @@ func processTable(ret *[]string, vT *Table) {
 	}
 }
 
-func separatorOffset(maxLenght int, wordLength int) int {
+func SeparatorOffset(maxLenght int, wordLength int) int {
 	offset := 0
 	if (maxLenght-wordLength)%2 == 0 {
 		offset = (maxLenght - wordLength) / 2
@@ -62,7 +62,7 @@ func (db Database) ToStringList(maxLenght int) []string {
 
 		// World title
 
-		worldSeparator := strings.Repeat("+", (separatorOffset(maxLenght, 48)))
+		worldSeparator := strings.Repeat("+", (SeparatorOffset(maxLenght, 48)))
 
 		ret = append(ret, gui.ColorYellow(strings.Repeat("=", maxLenght)))
 		ret = append(ret, fmt.Sprintf("%s %s %s", gui.ColorGreen(worldSeparator), gui.ColorBlue(fmt.Sprintf("World %s", vW.Address)), gui.ColorGreen(worldSeparator)))
@@ -71,7 +71,7 @@ func (db Database) ToStringList(maxLenght int) []string {
 
 		// Game tables
 		titleGameTables := "Game tables"
-		gameTablesSeparator := strings.Repeat("\u2632", (separatorOffset(maxLenght, len(titleGameTables)) - 1))
+		gameTablesSeparator := strings.Repeat("\u2632", (SeparatorOffset(maxLenght, len(titleGameTables)) - 1))
 		ret = append(ret, fmt.Sprintf("%s %s %s", gui.ColorCyan(gameTablesSeparator), gui.ColorBlue(titleGameTables), gui.ColorCyan(gameTablesSeparator)))
 		ret = append(ret, "")
 		for _, vT := range vW.Tables {
@@ -85,7 +85,7 @@ func (db Database) ToStringList(maxLenght int) []string {
 
 		// System tables
 		titleSystemTables := "System tables"
-		systemTablesSeparator := strings.Repeat("\u2632", (separatorOffset(maxLenght, len(titleSystemTables)) - 1))
+		systemTablesSeparator := strings.Repeat("\u2632", (SeparatorOffset(maxLenght, len(titleSystemTables)) - 1))
 		ret = append(ret, fmt.Sprintf("%s %s %s", gui.ColorCyan(systemTablesSeparator), gui.ColorBlue(titleSystemTables), gui.ColorCyan(systemTablesSeparator)))
 		ret = append(ret, "")
 		for _, v := range tempSysTables {

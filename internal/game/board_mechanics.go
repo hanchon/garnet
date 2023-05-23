@@ -28,21 +28,23 @@ func (gs *GameState) setMovementPosition(x, y int64, color gocui.Attribute) {
 	}
 }
 
+var attackBackgroundColor = gocui.ColorRed
+
 func (gs *GameState) setAttackPosition(x, y int64, myUser string) {
 	// Bases
 	if myUser == gs.BoardStatus.PlayerOne {
 		if (x == 4 || x == 5) && (y == 8 || y == 9) {
-			setBackgroundColor(fmt.Sprintf("%s%d%d", boardViewName, x, y), gocui.ColorRed, gs.ui)
+			setBackgroundColor(fmt.Sprintf("%s%d%d", boardViewName, x, y), attackBackgroundColor, gs.ui)
 		}
 	} else {
 		if (x == 4 || x == 5) && (y == 0 || y == 1) {
-			setBackgroundColor(fmt.Sprintf("%s%d%d", boardViewName, x, y), gocui.ColorRed, gs.ui)
+			setBackgroundColor(fmt.Sprintf("%s%d%d", boardViewName, x, y), attackBackgroundColor, gs.ui)
 		}
 
 	}
 	for _, v := range gs.BoardStatus.Cards {
 		if v.Position.X == x && v.Position.Y == y && v.Owner != myUser {
-			setBackgroundColor(fmt.Sprintf("%s%d%d", boardViewName, x, y), gocui.ColorRed, gs.ui)
+			setBackgroundColor(fmt.Sprintf("%s%d%d", boardViewName, x, y), attackBackgroundColor, gs.ui)
 			return
 		}
 	}

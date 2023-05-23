@@ -69,7 +69,7 @@ func lineWithCastles(enemy bool) string {
 func drawBase(p1Health int, p2Health int, currentX int, currentY int, v *gocui.View, isPlayerOne bool) {
 	// Player 1 base
 	if currentX == 4 && currentY == 0 {
-		fmt.Fprintf(v, "%d/10%s\n", p1Health, drawHeart())
+		fmt.Fprintf(v, "%d/10 %s\n", p1Health, drawHeart())
 		fmt.Fprintf(v, lineWithCastles(!isPlayerOne))
 	}
 	if (currentX == 4 && currentY == 1) || (currentX == 5 && currentY == 0) || (currentX == 5 && currentY == 1) {
@@ -79,7 +79,7 @@ func drawBase(p1Health int, p2Health int, currentX int, currentY int, v *gocui.V
 
 	// Player 2 base
 	if currentX == 4 && currentY == 8 {
-		fmt.Fprintf(v, "%d/10%s\n", p2Health, drawHeart())
+		fmt.Fprintf(v, "%d/10 %s\n", p2Health, drawHeart())
 		fmt.Fprintf(v, lineWithCastles(isPlayerOne))
 	}
 	if (currentX == 4 && currentY == 9) || (currentX == 5 && currentY == 8) || (currentX == 5 && currentY == 9) {
@@ -87,19 +87,6 @@ func drawBase(p1Health int, p2Health int, currentX int, currentY int, v *gocui.V
 		fmt.Fprintf(v, lineWithCastles(isPlayerOne))
 	}
 }
-
-// func (gs *GameState) clearBoardBackground() error {
-// 	for i := 0; i <= boardLimitX; i = i + 1 {
-// 		for j := 0; j <= boardLimitY; j = j + 1 {
-// 			v, err := gs.ui.View(fmt.Sprintf("%s%d%d", boardViewName, i, j))
-// 			if err != nil {
-// 				return err
-// 			}
-// 			v.BgColor = gocui.ColorBlack
-// 		}
-// 	}
-// 	return nil
-// }
 
 func (gs *GameState) updateBoard() error {
 	userCards := gs.GetUserCards()
@@ -141,7 +128,11 @@ func (gs *GameState) updateBoard() error {
 							symbol = gui.ColorGreen(fmt.Sprintf("(%s)", TypeOfCards[card.Type].Symbol))
 						}
 					}
-					fmt.Fprintf(v, " %s/%s %s\n", strconv.FormatInt(card.CurrentHp, 10), strconv.FormatInt(card.MaxHp, 10), drawHeart())
+					if card.CurrentHp == 10 {
+						fmt.Fprintf(v, "%s/%s %s\n", strconv.FormatInt(card.CurrentHp, 10), strconv.FormatInt(card.MaxHp, 10), drawHeart())
+					} else {
+						fmt.Fprintf(v, " %s/%s %s\n", strconv.FormatInt(card.CurrentHp, 10), strconv.FormatInt(card.MaxHp, 10), drawHeart())
+					}
 					fmt.Fprintf(v, "  %s\n", symbol)
 					break
 				}

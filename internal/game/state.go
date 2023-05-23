@@ -39,6 +39,7 @@ const (
 	EmptyAction  = ""
 	SummonAction = "summon"
 	MoveAction   = "move"
+	EndTurn      = "endturn"
 )
 
 type GameState struct {
@@ -62,6 +63,7 @@ type GameState struct {
 	lastBoardRenderUpdate        time.Time
 	UnitSelected                 string
 	CurrentAction                string
+	notificationMessages         []string
 }
 
 func NewGameState(ui *gocui.Gui, username string, password string) *GameState {
@@ -85,6 +87,8 @@ func NewGameState(ui *gocui.Gui, username string, password string) *GameState {
 		lastBoardRenderUpdate:        time.Unix(0, 0),
 		UnitSelected:                 "",
 		CurrentAction:                EmptyAction,
+		// TODO: this should be a queue with max size of 6
+		notificationMessages: []string{},
 	}
 }
 
@@ -140,6 +144,8 @@ func InitWsConnection(gameState *GameState) *websocket.Conn {
 
 				gameState.BoardStatus = &msg.Status
 				gameState.lastBoardStatusUpdate = time.Now()
+				// TODO: check if this does not break some interactions
+				gameState.CurrentAction = EmptyAction
 				logger.LogInfo(fmt.Sprintf("[client] processing board status message at:%s", gameState.lastBoardStatusUpdate))
 			}
 		}

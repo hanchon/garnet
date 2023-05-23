@@ -85,44 +85,41 @@ func (g *GlobalState) BroadcastUpdates() {
 		case <-g.done:
 			return
 		case <-time.After(50 * time.Millisecond):
-			if len(g.WsSockets) == 0 {
-				continue
-			}
+			if len(g.WsSockets) != 0 {
+				timestamp := g.Database.LastUpdate
+				if g.LastBroadcastTime != timestamp {
 
-			timestamp := g.Database.LastUpdate
-			if g.LastBroadcastTime == timestamp {
-				continue
-			}
-
-			w, ok := g.Database.Worlds[WorldID]
-			if !ok {
-				panic("world not found")
-			}
-
-			g.LastBroadcastTime = timestamp
-
-			for _, v := range g.WsSockets {
-				matchData := g.Database.GetBoardStatus(WorldID, v.WalletAddress)
-				if matchData != nil {
-					// TODO: save the user and wallet somewhere
-					matchData.PlayerOneUsermane = "user1"
-					matchData.PlayerTwoUsermane = "user2"
-					msgToSend := BoardStatus{MsgType: "boardstatus", Status: *matchData}
-					logger.LogDebug(fmt.Sprintf("[backend] sending match info %s to %s", matchData.MatchID, v.User))
-					err := v.Conn.WriteJSON(msgToSend)
-					if err != nil {
-						panic("could not send the board status")
+					w, ok := g.Database.Worlds[WorldID]
+					if !ok {
+						panic("world not found")
 					}
-				} else {
-					t := w.GetTableByName("Match")
-					if t != nil {
-						ret := []string{}
-						for k := range *t.Rows {
-							ret = append(ret, k)
+
+					g.LastBroadcastTime = timestamp
+
+					for _, v := range g.WsSockets {
+						matchData := g.Database.GetBoardStatus(WorldID, v.WalletAddress)
+						if matchData != nil {
+							// TODO: save the user and wallet somewhere
+							matchData.PlayerOneUsermane = "user1"
+							matchData.PlayerTwoUsermane = "user2"
+							msgToSend := BoardStatus{MsgType: "boardstatus", Status: *matchData}
+							logger.LogDebug(fmt.Sprintf("[backend] sending match info %s to %s", matchData.MatchID, v.User))
+							err := v.Conn.WriteJSON(msgToSend)
+							if err != nil {
+								panic("could not send the board status")
+							}
+						} else {
+							t := w.GetTableByName("Match")
+							if t != nil {
+								ret := []string{}
+								for k := range *t.Rows {
+									ret = append(ret, k)
+								}
+								msg := MatchList{MsgType: "matchlist", Matches: ret}
+								v.Conn.WriteJSON(msg)
+								logger.LogDebug(fmt.Sprintf("[backend] sending %d active matches", len(ret)))
+							}
 						}
-						msg := MatchList{MsgType: "matchlist", Matches: ret}
-						v.Conn.WriteJSON(msg)
-						logger.LogDebug(fmt.Sprintf("[backend] sending %d active matches", len(ret)))
 					}
 				}
 			}

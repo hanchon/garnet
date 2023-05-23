@@ -9,6 +9,24 @@ import (
 
 const cardInfoViewName = "cardInfo"
 
+type CardInfo struct {
+	name      string
+	symbol    string
+	maxHealth string
+	hp        string
+	attack    string
+	movement  string
+}
+
+var cardInfoEmpty = CardInfo{
+	name:      "No card",
+	symbol:    "?",
+	maxHealth: "",
+	hp:        "",
+	attack:    "",
+	movement:  "",
+}
+
 func cardInfo(pos ViewPosition, g *gocui.Gui) error {
 	if v, err := g.SetView(cardInfoViewName, pos.startX, pos.startY, pos.endX, pos.endY); err != nil {
 		if err != gocui.ErrUnknownView {
@@ -16,15 +34,7 @@ func cardInfo(pos ViewPosition, g *gocui.Gui) error {
 		}
 		v.SelBgColor = gocui.ColorGreen
 		v.SelFgColor = gocui.ColorBlack
-		fmt.Fprintln(v, "      Card Info      ")
-		fmt.Fprintln(v, "─────────────────────")
-		fmt.Fprintln(v, " Name -> Warrior")
-		fmt.Fprintf(v, "  ◎ Health  : 6 %s\n", drawHeart())
-		fmt.Fprintf(v, "  ◎ Attack  : 4 (2%s)\n", drawMana())
-		fmt.Fprintf(v, "  ◎ Movement: 2 (2%s)\n", drawMana())
-		fmt.Fprintln(v, " ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ")
-		fmt.Fprintln(v, " Ability:")
-		fmt.Fprintf(v, "  ◎ Drain Sword: (4%s)\n", drawMana())
+		drawCardInfo(v, cardInfoEmpty)
 	}
 	return nil
 }
@@ -34,32 +44,34 @@ func (gs *GameState) updateCardInfo() error {
 	if err != nil {
 		return err
 	}
-	name := ""
-	symbol := ""
-	maxHealth := ""
-	hp := ""
-	attack := ""
-	movement := ""
-
-	card, err := gs.GetSelectedCard()
-	if err == nil {
-		name = TypeOfCards[card.Type].Name
-		symbol = TypeOfCards[card.Type].Symbol
-		maxHealth = fmt.Sprintf("%d", card.MaxHp)
-		hp = fmt.Sprintf("%d", card.CurrentHp)
-		attack = fmt.Sprintf("%d", card.AttackDamage)
-		movement = fmt.Sprintf("%d", card.MovementSpeed)
-	}
 
 	v.Clear()
+	card, err := gs.GetSelectedCard()
+	if err == nil {
+		temp := CardInfo{
+			name:      TypeOfCards[card.Type].Name,
+			symbol:    TypeOfCards[card.Type].Symbol,
+			maxHealth: fmt.Sprintf("%d", card.MaxHp),
+			hp:        fmt.Sprintf("%d", card.CurrentHp),
+			attack:    fmt.Sprintf("%d", card.AttackDamage),
+			movement:  fmt.Sprintf("%d", card.MovementSpeed),
+		}
+		drawCardInfo(v, temp)
+	} else {
+		drawCardInfo(v, cardInfoEmpty)
+	}
+
+	return nil
+}
+
+func drawCardInfo(v *gocui.View, cardInfo CardInfo) {
 	fmt.Fprintln(v, "      Card Info      ")
 	fmt.Fprintln(v, "─────────────────────")
-	fmt.Fprintf(v, " %s %s\n", gui.ColorMagenta(fmt.Sprintf("(%s)", symbol)), gui.ColorMagenta(name))
-	fmt.Fprintf(v, "  ◎ Health  : %s/%s %s\n", maxHealth, hp, drawHeart())
-	fmt.Fprintf(v, "  ◎ Attack  : %s (2%s)\n", attack, drawMana())
-	fmt.Fprintf(v, "  ◎ Movement: %s (2%s)\n", movement, drawMana())
+	fmt.Fprintf(v, " %s %s\n", gui.ColorMagenta(fmt.Sprintf("(%s)", cardInfo.symbol)), gui.ColorMagenta(cardInfo.name))
+	fmt.Fprintf(v, "  ◎ Health  : %s/%s %s\n", cardInfo.maxHealth, cardInfo.hp, drawHeart())
+	fmt.Fprintf(v, "  ◎ Attack  : %s (2%s)\n", cardInfo.attack, drawMana())
+	fmt.Fprintf(v, "  ◎ Movement: %s (2%s)\n", cardInfo.movement, drawMana())
 	fmt.Fprintln(v, " ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ")
 	fmt.Fprintln(v, " Ability:")
 	fmt.Fprintf(v, "  ◎ -----------: (4%s)\n", drawMana())
-	return nil
 }

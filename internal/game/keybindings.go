@@ -49,6 +49,10 @@ func (gs *GameState) selectCardFromPlayerActions(g *gocui.Gui, v *gocui.View) er
 		logger.LogInfo(fmt.Sprintf("[client] sending end turn transaction for match %s", gs.BoardStatus.MatchID))
 		msg := messages.EndTurn{MsgType: "endturn", MatchID: gs.BoardStatus.MatchID}
 		gs.Ws.WriteJSON(msg)
+		gs.notificationMessages = append(gs.notificationMessages, "sending end turn transaction")
+		gs.updateNotifications()
+		gs.CurrentAction = EndTurn
+		gs.updatePlayerActions()
 		return nil
 	}
 	// Select card checks
@@ -93,13 +97,17 @@ func (gs *GameState) selectCardFromPlayerActions(g *gocui.Gui, v *gocui.View) er
 		// Make sure that the card was not already summoned
 		if currentCard.Placed {
 			gs.selectCard(currentCard.Position.X, currentCard.Position.Y)
-			logger.LogDebug("[client] the card is already summoned")
+			logger.LogDebug("[client] the card was already summoned")
+			gs.notificationMessages = append(gs.notificationMessages, "the selected card was already summoned")
+			gs.updateNotifications()
 			return nil
 		}
 
 		// Make sure we have at least 3 mana
 		if gs.BoardStatus.CurrentMana < 3 {
 			logger.LogInfo("[client] not enough mana to summon")
+			gs.notificationMessages = append(gs.notificationMessages, "there is not enough mana tu summon a new card")
+			gs.updateNotifications()
 			return nil
 		}
 
@@ -113,6 +121,8 @@ func (gs *GameState) selectCardFromPlayerActions(g *gocui.Gui, v *gocui.View) er
 		// The user can only summon 3 cards
 		if totalSummons >= 3 {
 			logger.LogInfo("[client] all the summons were used")
+			gs.notificationMessages = append(gs.notificationMessages, "all the summon actions were already used")
+			gs.updateNotifications()
 			return nil
 		}
 
@@ -144,30 +154,6 @@ func delMsg(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func (gs *GameState) clickOnGameActions(g *gocui.Gui, v *gocui.View) error {
-	_, cy := v.Cursor()
-	if l, err := v.Line(cy); err == nil {
-		if strings.Contains(l, "CREATE") {
-			// CREATE GAME
-		}
-
-		if strings.Contains(l, "QUIT") {
-
-			g.SetManagerFunc(GameLayout)
-			if err := gs.GameKeybindings(g); err != nil {
-				panic(err)
-			}
-
-			// if err := g.DeleteView(gameActionsViewName); err != nil {
-			// 	return err
-			// }
-			// return nil
-
-		}
-	}
-	return nil
-}
-
 func (gs *GameState) boardMouseActionsHandler(g *gocui.Gui, v *gocui.View) error {
 	xy := strings.Replace(v.Name(), "board", "", 1)
 	x, err := strconv.ParseInt(string(xy[0]), 10, 64)
@@ -192,12 +178,18 @@ func (gs *GameState) boardMouseActionsHandler(g *gocui.Gui, v *gocui.View) error
 			if err != nil {
 				logger.LogError(fmt.Sprintf("[client] could not send place card message: %s", err))
 			}
+			gs.notificationMessages = append(gs.notificationMessages, "sending summon transaction")
+			gs.updateNotifications()
+
 			gs.CurrentAction = EmptyAction
 			gs.UnitSelected = ""
 			gs.updateBoard()
 			gs.updatePlayerActions()
 			gs.updateCardInfo()
 		} else {
+			gs.notificationMessages = append(gs.notificationMessages, "summon cancelled")
+			gs.updateNotifications()
+
 			gs.CurrentAction = EmptyAction
 			gs.UnitSelected = ""
 			gs.updateBoard()
@@ -220,12 +212,15 @@ func (gs *GameState) boardMouseActionsHandler(g *gocui.Gui, v *gocui.View) error
 				logger.LogError(fmt.Sprintf("[client] could not send move card message: %s", err))
 			}
 
+			gs.notificationMessages = append(gs.notificationMessages, "sending move transaction")
+			gs.updateNotifications()
+
 			gs.CurrentAction = EmptyAction
 			gs.UnitSelected = ""
 			gs.updateBoard()
 			gs.updatePlayerActions()
 			gs.updateCardInfo()
-		} else if v.BgColor == gocui.ColorRed {
+		} else if v.BgColor == attackBackgroundColor {
 			// Move
 			logger.LogInfo(fmt.Sprintf("[client] attack to pos"))
 			// TODO: this may fail if the user selects another card from the left table, make sure to clean the board background on unitselected changes
@@ -239,6 +234,8 @@ func (gs *GameState) boardMouseActionsHandler(g *gocui.Gui, v *gocui.View) error
 			if err != nil {
 				logger.LogError(fmt.Sprintf("[client] could not send attack message: %s", err))
 			}
+			gs.notificationMessages = append(gs.notificationMessages, "sending attack transaction")
+			gs.updateNotifications()
 
 			gs.CurrentAction = EmptyAction
 			gs.UnitSelected = ""
@@ -246,6 +243,9 @@ func (gs *GameState) boardMouseActionsHandler(g *gocui.Gui, v *gocui.View) error
 			gs.updatePlayerActions()
 			gs.updateCardInfo()
 		} else {
+			gs.notificationMessages = append(gs.notificationMessages, "stopping current action")
+			gs.updateNotifications()
+
 			gs.CurrentAction = EmptyAction
 			gs.selectCard(x, y)
 		}
@@ -263,12 +263,28 @@ func (gs *GameState) selectCard(x int64, y int64) {
 	for _, value := range gs.BoardStatus.Cards {
 		if value.Position.X == x && value.Position.Y == y {
 			gs.UnitSelected = value.ID
+			gs.notificationMessages = append(gs.notificationMessages, fmt.Sprintf("card selected, pos x:%d, y:%d", x, y))
+			gs.updateNotifications()
+
 			// Update tables
 			gs.updateCardInfo()
 			gs.updatePlayerActions()
 			// If the unit owner is the user, display the movement places
 			for _, card := range gs.GetUserCards() {
 				if card.ID == value.ID {
+					if gs.BoardStatus.CurrentMana <= 1 {
+						gs.CurrentAction = EmptyAction
+						gs.notificationMessages = append(gs.notificationMessages, "not enough mana to executed any action, end turn please")
+						gs.updateNotifications()
+						return
+					}
+					if card.ActionReady == false {
+						gs.CurrentAction = EmptyAction
+						logger.LogDebug("[client] the selected card already used its action")
+						gs.notificationMessages = append(gs.notificationMessages, "selected card already executed this turn attack action")
+						gs.updateNotifications()
+						return
+					}
 					gs.CurrentAction = MoveAction
 					gs.drawMovementPlaces(x, y, card.MovementSpeed)
 					gs.drawAttackPlaces(x, y)

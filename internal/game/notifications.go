@@ -2,7 +2,10 @@ package game
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/hanchon/garnet/internal/gui"
+	"github.com/hanchon/garnet/internal/indexer/data"
 	"github.com/jroimartin/gocui"
 )
 
@@ -15,28 +18,28 @@ func (gs *GameState) updateNotifications() error {
 	if err != nil {
 		return err
 	}
-
-	currentPlayer := gs.BoardStatus.PlayerTwoUsermane
-	if gs.BoardStatus.CurrentPlayer == gs.BoardStatus.PlayerOne {
-		currentPlayer = gs.BoardStatus.PlayerOneUsermane
-	}
-	username := gs.BoardStatus.PlayerTwoUsermane
-	if gs.Username == gs.BoardStatus.PlayerOneUsermane {
-		username = gs.BoardStatus.PlayerOneUsermane
-	}
 	v.Clear()
+	fmt.Fprintln(v, generateHeaderNotifications())
+	// TODO: just add the condition to the for loop
+	j := 0
+	for i := len(gs.notificationMessages) - 1; i >= 0; i-- {
+		fmt.Fprintf(v, fmt.Sprintf(" %s %s", gui.ColorYellow("\u27a4"), gs.notificationMessages[i]))
+		j++
+		if j == 6 {
+			break
+		}
+	}
 
-	fmt.Fprintf(
-		v,
-		"%s%s                   %s%d            %s%s",
-		"Player: ",
-		username,
-		"Current turn: ",
-		gs.BoardStatus.CurrentTurn,
-		"Current player: ",
-		currentPlayer,
-	)
 	return nil
+}
+
+func generateHeaderNotifications() string {
+	var maxLengthNotifications = boardWidth - leftOffset
+
+	titleGameTables := "MESSAGES"
+	gameTablesSeparator := strings.Repeat("\u2632", (data.SeparatorOffset(maxLengthNotifications, len(titleGameTables)) - 1))
+	header := fmt.Sprintf("%s %s %s", gui.ColorCyan(gameTablesSeparator), gui.ColorBlue(titleGameTables), gui.ColorCyan(gameTablesSeparator))
+	return header
 }
 
 func notifications(pos ViewPosition, g *gocui.Gui) error {
@@ -44,8 +47,7 @@ func notifications(pos ViewPosition, g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		v.Frame = false
-		fmt.Fprintf(v, "%s                   %s            %s", "Player: user1", "Current turn: 0", "Current player: user1")
+		fmt.Fprintln(v, generateHeaderNotifications())
 	}
 	return nil
 }

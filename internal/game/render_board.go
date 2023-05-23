@@ -52,6 +52,10 @@ func (gs *GameState) UpdateBoard() {
 						if err != nil {
 							return err
 						}
+						err = gs.updateGameActions()
+						if err != nil {
+							return err
+						}
 
 						return nil
 					})
