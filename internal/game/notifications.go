@@ -23,7 +23,7 @@ func (gs *GameState) updateNotifications() error {
 	// TODO: just add the condition to the for loop
 	j := 0
 	for i := len(gs.notificationMessages) - 1; i >= 0; i-- {
-		fmt.Fprintf(v, fmt.Sprintf(" %s %s", gui.ColorYellow("\u27a4"), gs.notificationMessages[i]))
+		fmt.Fprintf(v, fmt.Sprintf(" %s %s\n", gui.ColorYellow("\u27a4"), gs.notificationMessages[i]))
 		j++
 		if j == 6 {
 			break
