@@ -4,13 +4,13 @@ Autonomous Worlds hackathon entry.
 
 - Garnet: is a custom indexer and backend code running on top of MUDv2.
 
-  ![GarnetScreenshot](garnet.png =600x400)
+  ![GarnetScreenshot](garnet.png)
 
 - Eternal Legends is the example game:
 
   - Eternal Legends, a blockchain-based turn-based tactical game, combines MUD2, Solidity, and GoLang. Players select 3 heroes to protect their castles in battles fought on an ASCII graphical interface. Destroying the opponent's base leads to victory.
 
-    ![EternalLegendsScreenshot](eternallegends.png =400x400)
+    ![EternalLegendsScreenshot](eternallegends.png)
 
 ## Requirements
 
