@@ -16,6 +16,8 @@ func StartGorillaServer(port int, database *data.Database) error {
 	router := mux.NewRouter()
 	g := messages.NewGlobalState(database)
 	router.HandleFunc("/ws", g.WebSocketConnectionHandler).Methods("GET", "OPTIONS")
+	go g.BroadcastUpdates()
+
 	cors.ServerEnableCORS(router)
 	return http.ListenAndServe(fmt.Sprint(":", port), router)
 }

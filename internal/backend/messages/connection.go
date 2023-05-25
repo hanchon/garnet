@@ -73,10 +73,7 @@ func (g *GlobalState) WebSocketConnectionHandler(response http.ResponseWriter, r
 		Conn:          ws,
 	}
 
-	go g.BroadcastUpdates()
-
 	g.WsHandler(&webSocket)
-	close(g.done)
 }
 
 func (g *GlobalState) BroadcastUpdates() {
@@ -88,6 +85,7 @@ func (g *GlobalState) BroadcastUpdates() {
 			if len(g.WsSockets) != 0 {
 				timestamp := g.Database.LastUpdate
 				if g.LastBroadcastTime != timestamp {
+					logger.LogDebug(fmt.Sprintf("[backend] database was updated, broadcasting messages..."))
 
 					w, ok := g.Database.Worlds[WorldID]
 					if !ok {
@@ -97,27 +95,38 @@ func (g *GlobalState) BroadcastUpdates() {
 					g.LastBroadcastTime = timestamp
 
 					for _, v := range g.WsSockets {
-						matchData := g.Database.GetBoardStatus(WorldID, v.WalletAddress)
-						if matchData != nil {
-							// TODO: save the user and wallet somewhere
-							matchData.PlayerOneUsermane = "user1"
-							matchData.PlayerTwoUsermane = "user2"
-							msgToSend := BoardStatus{MsgType: "boardstatus", Status: *matchData}
-							logger.LogDebug(fmt.Sprintf("[backend] sending match info %s to %s", matchData.MatchID, v.User))
-							err := v.Conn.WriteJSON(msgToSend)
-							if err != nil {
-								panic("could not send the board status")
-							}
-						} else {
-							t := w.GetTableByName("Match")
-							if t != nil {
-								ret := []string{}
-								for k := range *t.Rows {
-									ret = append(ret, k)
+						if v.Conn != nil {
+							matchData := g.Database.GetBoardStatus(WorldID, v.WalletAddress)
+							if matchData != nil {
+								// TODO: save the user and wallet somewhere
+								matchData.PlayerOneUsermane = "user1"
+								matchData.PlayerTwoUsermane = "user2"
+								msgToSend := BoardStatus{MsgType: "boardstatus", Status: *matchData}
+								logger.LogDebug(fmt.Sprintf("[backend] sending match info %s to %s", matchData.MatchID, v.User))
+								err := v.Conn.WriteJSON(msgToSend)
+								if err != nil {
+									logger.LogError(fmt.Sprintf("[backend] error sending transaction to client, unsubscribing: %s", err))
+									// TODO: unsub from this connection, it requires a lock in the g.WsSockets variable to avoid breaking the loops
+									v.Authenticated = false
+									v.Conn = nil
 								}
-								msg := MatchList{MsgType: "matchlist", Matches: ret}
-								v.Conn.WriteJSON(msg)
-								logger.LogDebug(fmt.Sprintf("[backend] sending %d active matches", len(ret)))
+							} else {
+								t := w.GetTableByName("Match")
+								if t != nil {
+									ret := []string{}
+									for k := range *t.Rows {
+										ret = append(ret, k)
+									}
+									msg := MatchList{MsgType: "matchlist", Matches: ret}
+									err := v.Conn.WriteJSON(msg)
+									if err != nil {
+										logger.LogError(fmt.Sprintf("[backend] error sending transaction to client, unsubscribing: %s", err))
+										// TODO: unsub from this connection, it requires a lock in the g.WsSockets variable to avoid breaking the loops
+										v.Authenticated = false
+										v.Conn = nil
+									}
+									logger.LogDebug(fmt.Sprintf("[backend] sending %d active matches", len(ret)))
+								}
 							}
 						}
 					}
