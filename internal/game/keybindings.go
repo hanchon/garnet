@@ -245,7 +245,6 @@ func (gs *GameState) boardMouseActionsHandler(g *gocui.Gui, v *gocui.View) error
 		} else {
 			gs.notificationMessages = append(gs.notificationMessages, "stopping current action")
 			gs.updateNotifications()
-
 			gs.CurrentAction = EmptyAction
 			gs.selectCard(x, y)
 		}
@@ -274,7 +273,7 @@ func (gs *GameState) selectCard(x int64, y int64) {
 				if card.ID == value.ID {
 					if gs.BoardStatus.CurrentMana <= 1 {
 						gs.CurrentAction = EmptyAction
-						gs.notificationMessages = append(gs.notificationMessages, "not enough mana to executed any action, end turn please")
+						gs.notificationMessages = append(gs.notificationMessages, "not enough mana to execute any action, please end turn")
 						gs.updateNotifications()
 						return
 					}

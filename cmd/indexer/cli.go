@@ -43,9 +43,10 @@ func NewDebugUI() *DebugUI {
 }
 
 func findWord(input string, values []string) []int {
+	// Input must be lower case
 	a := []int{}
 	for k, v := range values {
-		if strings.Contains(strings.ToLower(v), strings.ToLower(input)) {
+		if strings.Contains(strings.ToLower(v), input) {
 			a = append(a, k)
 		}
 	}
@@ -137,7 +138,11 @@ func (ui *DebugUI) ProcessIncomingData(database *data.Database) {
 			ui.ui.Update(func(g *gocui.Gui) error {
 				if v, err := g.View("searchboxinfo"); err == nil {
 					v.Clear()
-					fmt.Fprintf(v, "Type to search. Control+n and Control+p to move arround. Res:%d/%d", ui.searchIndex+1, ui.searchTotalIndex)
+					current := ui.searchIndex + 1
+					if ui.searchTotalIndex == 0 {
+						current = 0
+					}
+					fmt.Fprintf(v, "Type to search. Control+n and Control+p to move arround. Res:%d/%d", current, ui.searchTotalIndex)
 				}
 				return nil
 			})
@@ -180,15 +185,26 @@ func (ui *DebugUI) ProcessIncomingData(database *data.Database) {
 						content := v.ViewBufferLines()
 						if len(content) > 0 {
 							// In case the user pressed enter
-							v.Clear()
-							fmt.Fprintf(v, content[len(content)-1])
+							temp := content[len(content)-1]
+							temp = strings.TrimSpace(temp)
+							ui.ui.Update(func(g *gocui.Gui) error {
+								if v, err := ui.ui.View("searchboxcontent"); err == nil {
+									v.Clear()
+									v.SetOrigin(0, 0)
+									v.Clear()
+									v.Editor = gocui.DefaultEditor
+									fmt.Fprintf(v, "%s", temp)
+									v.SetCursor(len(temp), 0)
+								}
+								return nil
+							})
 
 							// Find the word in the data
-							logger.LogDebug(fmt.Sprintf("[garnet] searching for: %s", content[0]))
-							pos := findWord(content[len(content)-1], ui.data)
+							logger.LogDebug(fmt.Sprintf("[garnet] searching for: %s", temp))
+							pos := findWord(strings.ToLower(temp), ui.data)
 							ui.searchTotalIndex = len(pos)
 							if len(pos) != 0 {
-								logger.LogDebug(fmt.Sprintf("[garnet] %s in positions: %v", content[0], pos))
+								logger.LogDebug(fmt.Sprintf("[garnet] %s in positions: %v", temp, pos))
 								if ui.searchIndex-1 < 0 || ui.searchIndex-1 >= len(pos) {
 									ui.searchIndex = len(pos) - 1
 								} else {
@@ -205,15 +221,25 @@ func (ui *DebugUI) ProcessIncomingData(database *data.Database) {
 						content := v.ViewBufferLines()
 						if len(content) > 0 {
 							// In case the user pressed enter
-							v.Clear()
-							fmt.Fprintf(v, content[len(content)-1])
+							temp := content[len(content)-1]
+							temp = strings.TrimSpace(temp)
+							ui.ui.Update(func(g *gocui.Gui) error {
+								if v, err := ui.ui.View("searchboxcontent"); err == nil {
+									v.Clear()
+									v.SetOrigin(0, 0)
+									v.Clear()
+									fmt.Fprintf(v, "%s", temp)
+									v.SetCursor(len(temp), 0)
+								}
+								return nil
+							})
 
 							// Find the word in the data
-							logger.LogDebug(fmt.Sprintf("[garnet] searching for: %s", content[0]))
-							pos := findWord(content[len(content)-1], ui.data)
+							logger.LogDebug(fmt.Sprintf("[garnet] searching for: %s", temp))
+							pos := findWord(strings.ToLower(temp), ui.data)
 							ui.searchTotalIndex = len(pos)
 							if len(pos) != 0 {
-								logger.LogDebug(fmt.Sprintf("[garnet] %s in positions: %v", content[0], pos))
+								logger.LogDebug(fmt.Sprintf("[garnet] %s in positions: %v", temp, pos))
 								if ui.searchIndex+1 > len(pos)-1 {
 									ui.searchIndex = 0
 								} else {

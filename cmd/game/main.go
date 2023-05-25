@@ -32,7 +32,7 @@ func main() {
 	}
 	defer g.Close()
 
-	g.Cursor = true
+	// g.Cursor = true
 	g.Mouse = true
 
 	g.SetManagerFunc(game.WelcomeScreenLayout)
