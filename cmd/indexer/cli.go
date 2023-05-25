@@ -8,33 +8,48 @@ import (
 
 	"github.com/hanchon/garnet/internal/gui"
 	"github.com/hanchon/garnet/internal/indexer/data"
+	"github.com/hanchon/garnet/internal/logger"
 	"github.com/jroimartin/gocui"
 )
 
 const maxLinesToDisplay = 37
 
 type DebugUI struct {
-	done           chan (struct{})
-	ui             *gocui.Gui
-	xOffset        int
-	yOffset        int
-	searchTerm     string
-	data           []string
-	dataLastUpdate time.Time
-	keyPressed     string
+	done             chan (struct{})
+	ui               *gocui.Gui
+	xOffset          int
+	yOffset          int
+	searchTerm       string
+	data             []string
+	dataLastUpdate   time.Time
+	searchTotalIndex int
+	searchIndex      int
+	keyPressed       string
 }
 
 func NewDebugUI() *DebugUI {
 	return &DebugUI{
-		done:           make(chan struct{}),
-		ui:             ui(),
-		xOffset:        0,
-		yOffset:        0,
-		searchTerm:     "",
-		data:           []string{""},
-		dataLastUpdate: time.Unix(0, 0),
-		keyPressed:     "",
+		done:             make(chan struct{}),
+		ui:               ui(),
+		xOffset:          0,
+		yOffset:          0,
+		searchTerm:       "",
+		data:             []string{""},
+		dataLastUpdate:   time.Unix(0, 0),
+		keyPressed:       "",
+		searchTotalIndex: 0,
+		searchIndex:      0,
 	}
+}
+
+func findWord(input string, values []string) []int {
+	a := []int{}
+	for k, v := range values {
+		if strings.Contains(strings.ToLower(v), strings.ToLower(input)) {
+			a = append(a, k)
+		}
+	}
+	return a
 }
 
 func (ui *DebugUI) Run() {
@@ -117,6 +132,16 @@ func (ui *DebugUI) ProcessIncomingData(database *data.Database) {
 		case <-ui.done:
 			return
 		case <-time.After(50 * time.Millisecond):
+			// TODO: move the search status updates to another function
+			// Update search status
+			ui.ui.Update(func(g *gocui.Gui) error {
+				if v, err := g.View("searchboxinfo"); err == nil {
+					v.Clear()
+					fmt.Fprintf(v, "Type to search. Control+n and Control+p to move arround. Res:%d/%d", ui.searchIndex+1, ui.searchTotalIndex)
+				}
+				return nil
+			})
+
 			rerender := false
 			lastUpdate := database.LastUpdate
 			if ui.dataLastUpdate != lastUpdate {
@@ -148,6 +173,56 @@ func (ui *DebugUI) ProcessIncomingData(database *data.Database) {
 
 				if ui.keyPressed == "END" {
 					ui.yOffset = len(ui.data) - maxLinesToDisplay
+				}
+
+				if ui.keyPressed == "P" {
+					if v, err := ui.ui.View("searchboxcontent"); err == nil {
+						content := v.ViewBufferLines()
+						if len(content) > 0 {
+							// In case the user pressed enter
+							v.Clear()
+							fmt.Fprintf(v, content[len(content)-1])
+
+							// Find the word in the data
+							logger.LogDebug(fmt.Sprintf("[garnet] searching for: %s", content[0]))
+							pos := findWord(content[len(content)-1], ui.data)
+							ui.searchTotalIndex = len(pos)
+							if len(pos) != 0 {
+								logger.LogDebug(fmt.Sprintf("[garnet] %s in positions: %v", content[0], pos))
+								if ui.searchIndex-1 < 0 || ui.searchIndex-1 >= len(pos) {
+									ui.searchIndex = len(pos) - 1
+								} else {
+									ui.searchIndex = ui.searchIndex - 1
+								}
+								ui.yOffset = pos[ui.searchIndex]
+							}
+						}
+					}
+				}
+
+				if ui.keyPressed == "N" {
+					if v, err := ui.ui.View("searchboxcontent"); err == nil {
+						content := v.ViewBufferLines()
+						if len(content) > 0 {
+							// In case the user pressed enter
+							v.Clear()
+							fmt.Fprintf(v, content[len(content)-1])
+
+							// Find the word in the data
+							logger.LogDebug(fmt.Sprintf("[garnet] searching for: %s", content[0]))
+							pos := findWord(content[len(content)-1], ui.data)
+							ui.searchTotalIndex = len(pos)
+							if len(pos) != 0 {
+								logger.LogDebug(fmt.Sprintf("[garnet] %s in positions: %v", content[0], pos))
+								if ui.searchIndex+1 > len(pos)-1 {
+									ui.searchIndex = 0
+								} else {
+									ui.searchIndex = ui.searchIndex + 1
+								}
+								ui.yOffset = pos[ui.searchIndex]
+							}
+						}
+					}
 				}
 
 				if ui.yOffset+maxLinesToDisplay > len(ui.data) {
@@ -262,6 +337,35 @@ func layout(g *gocui.Gui) error {
 			return err
 		}
 	}
+
+	searchBoxOffset := 8
+
+	if v, err := g.SetView("searchbox", blockchainInfoOffset, debugWindowHeight+1, blockchainInfoOffset+searchBoxOffset, debugWindowHeight+3); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Frame = false
+		fmt.Fprintf(v, "Search:")
+	}
+
+	if v, err := g.SetView("searchboxcontent", blockchainInfoOffset+searchBoxOffset+1, debugWindowHeight+1, logoWidth+debugWindowWidth, debugWindowHeight+3); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Frame = false
+		v.Editable = true
+		g.SetCurrentView("searchboxcontent")
+		fmt.Fprintf(v, "")
+	}
+
+	if v, err := g.SetView("searchboxinfo", blockchainInfoOffset, debugWindowHeight+3, logoWidth+debugWindowWidth, debugWindowHeight+5); err != nil {
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+		v.Frame = false
+		fmt.Fprintf(v, "Type to search. Control+n and Control+p to move arround.")
+	}
+
 	return nil
 }
 
@@ -298,6 +402,24 @@ func (ui *DebugUI) keybindings(g *gocui.Gui) error {
 		return err
 	}
 
+	if err := g.SetKeybinding("", gocui.KeyCtrlN, gocui.ModNone, ui.controlNPressed); err != nil {
+		return err
+	}
+
+	if err := g.SetKeybinding("", gocui.KeyCtrlP, gocui.ModNone, ui.controlPPressed); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ui *DebugUI) controlNPressed(g *gocui.Gui, v *gocui.View) error {
+	ui.keyPressed = "N"
+	return nil
+}
+
+func (ui *DebugUI) controlPPressed(g *gocui.Gui, v *gocui.View) error {
+	ui.keyPressed = "P"
 	return nil
 }
 
