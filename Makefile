@@ -21,6 +21,10 @@ run-localnet:
 contracts:
 	@source /opt/homebrew/opt/nvm/nvm.sh && nvm use v18.12.0 && cd contracts-builder/contracts && pnpm run dev && cd ../.. && cp contracts-builder/contracts/out/IWorld.sol/IWorld.abi.json internal/txbuilder/
 
+
+run-generator:
+	@go build -o ./build/generator ./cmd/generator && ./build/generator
+
 init-contracts:
 	@source /opt/homebrew/opt/nvm/nvm.sh && nvm use v18.12.0 && cd contracts-builder/contracts && pnpm run install
 

@@ -142,7 +142,7 @@ func (ui *DebugUI) ProcessIncomingData(database *data.Database) {
 					if ui.searchTotalIndex == 0 {
 						current = 0
 					}
-					fmt.Fprintf(v, "Type to search. Control+n and Control+p to move arround. Res:%d/%d", current, ui.searchTotalIndex)
+					fmt.Fprintf(v, "Type to search. Control+n and Control+p to move around. Res:%d/%d", current, ui.searchTotalIndex)
 				}
 				return nil
 			})
@@ -389,7 +389,7 @@ func layout(g *gocui.Gui) error {
 			return err
 		}
 		v.Frame = false
-		fmt.Fprintf(v, "Type to search. Control+n and Control+p to move arround.")
+		fmt.Fprintf(v, "Type to search. Control+n and Control+p to move around.")
 	}
 
 	return nil

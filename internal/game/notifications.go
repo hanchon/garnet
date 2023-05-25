@@ -19,7 +19,7 @@ func (gs *GameState) updateNotifications() error {
 		return err
 	}
 	v.Clear()
-	fmt.Fprintln(v, generateHeaderNotifications())
+	fmt.Fprintln(v, generateHeaderNotifications(gs.BoardStatus.MatchID))
 	// TODO: just add the condition to the for loop
 	j := 0
 	for i := len(gs.notificationMessages) - 1; i >= 0; i-- {
@@ -33,10 +33,10 @@ func (gs *GameState) updateNotifications() error {
 	return nil
 }
 
-func generateHeaderNotifications() string {
+func generateHeaderNotifications(matchid string) string {
 	var maxLengthNotifications = boardWidth - leftOffset
 
-	titleGameTables := "MESSAGES"
+	titleGameTables := fmt.Sprintf("MESSAGES: %s", matchid)
 	gameTablesSeparator := strings.Repeat("\u2632", (data.SeparatorOffset(maxLengthNotifications, len(titleGameTables)) - 1))
 	header := fmt.Sprintf("%s %s %s", gui.ColorCyan(gameTablesSeparator), gui.ColorBlue(titleGameTables), gui.ColorCyan(gameTablesSeparator))
 	return header
@@ -47,7 +47,7 @@ func notifications(pos ViewPosition, g *gocui.Gui) error {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
-		fmt.Fprintln(v, generateHeaderNotifications())
+		fmt.Fprintln(v, generateHeaderNotifications(""))
 	}
 	return nil
 }
