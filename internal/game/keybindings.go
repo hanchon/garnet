@@ -35,13 +35,10 @@ func (gs *GameState) GameKeybindings(g *gocui.Gui) error {
 	// 	return err
 	// }
 
-	if err := g.SetKeybinding("msg", gocui.MouseLeft, gocui.ModNone, delMsg); err != nil {
-		return err
-	}
-	return nil
+	return g.SetKeybinding("msg", gocui.MouseLeft, gocui.ModNone, delMsg)
 }
 
-func (gs *GameState) selectCardFromPlayerActions(g *gocui.Gui, v *gocui.View) error {
+func (gs *GameState) selectCardFromPlayerActions(_ *gocui.Gui, v *gocui.View) error {
 	_, cy := v.Cursor()
 
 	// End turn
@@ -165,14 +162,11 @@ func (gs *GameState) selectCardFromPlayerActions(g *gocui.Gui, v *gocui.View) er
 	return nil
 }
 
-func delMsg(g *gocui.Gui, v *gocui.View) error {
-	if err := g.DeleteView("msg"); err != nil {
-		return err
-	}
-	return nil
+func delMsg(g *gocui.Gui, _ *gocui.View) error {
+	return g.DeleteView("msg")
 }
 
-func (gs *GameState) boardMouseActionsHandler(g *gocui.Gui, v *gocui.View) error {
+func (gs *GameState) boardMouseActionsHandler(_ *gocui.Gui, v *gocui.View) error {
 	xy := strings.Replace(v.Name(), "board", "", 1)
 	x, err := strconv.ParseInt(string(xy[0]), 10, 64)
 	if err != nil {
@@ -397,6 +391,6 @@ func (gs *GameState) selectCard(x int64, y int64) {
 	}
 }
 
-func quit(g *gocui.Gui, v *gocui.View) error {
+func quit(_ *gocui.Gui, _ *gocui.View) error {
 	return gocui.ErrQuit
 }

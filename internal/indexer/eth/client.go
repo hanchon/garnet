@@ -41,18 +41,17 @@ func ProcessBlocks(c *ethclient.Client, db *data.Database, initBlockHeight *big.
 				logger.LogError(fmt.Sprintf("error decoding message:%s", err))
 				// TODO: what should we do here?
 				break
-			} else {
-				switch mudhelpers.PaddedTableId(event.TableId) {
-				case mudhelpers.SchemaTableId():
-					logger.LogInfo("processing and creating schema table")
-					mudhandlers.HandleSchemaTableEvent(event, db)
-				case mudhelpers.MetadataTableId():
-					logger.LogInfo("processing and updating a schema with metadata")
-					mudhandlers.HandleMetadataTableEvent(event, db)
-				default:
-					logger.LogInfo("processing a generic table event like adding a row")
-					mudhandlers.HandleGenericTableEvent(event, db)
-				}
+			}
+			switch mudhelpers.PaddedTableId(event.TableId) {
+			case mudhelpers.SchemaTableId():
+				logger.LogInfo("processing and creating schema table")
+				mudhandlers.HandleSchemaTableEvent(event, db)
+			case mudhelpers.MetadataTableId():
+				logger.LogInfo("processing and updating a schema with metadata")
+				mudhandlers.HandleMetadataTableEvent(event, db)
+			default:
+				logger.LogInfo("processing a generic table event like adding a row")
+				mudhandlers.HandleGenericTableEvent(event, db)
 			}
 		}
 

@@ -438,53 +438,49 @@ func (ui *DebugUI) keybindings(g *gocui.Gui) error {
 		return err
 	}
 
-	if err := g.SetKeybinding("", gocui.KeyCtrlP, gocui.ModNone, ui.controlPPressed); err != nil {
-		return err
-	}
-
-	return nil
+	return g.SetKeybinding("", gocui.KeyCtrlP, gocui.ModNone, ui.controlPPressed)
 }
 
-func (ui *DebugUI) controlNPressed(g *gocui.Gui, v *gocui.View) error {
+func (ui *DebugUI) controlNPressed(_ *gocui.Gui, _ *gocui.View) error {
 	ui.keyPressed = "N"
 	return nil
 }
 
-func (ui *DebugUI) controlPPressed(g *gocui.Gui, v *gocui.View) error {
+func (ui *DebugUI) controlPPressed(_ *gocui.Gui, _ *gocui.View) error {
 	ui.keyPressed = "P"
 	return nil
 }
 
-func (ui *DebugUI) homePressed(g *gocui.Gui, v *gocui.View) error {
+func (ui *DebugUI) homePressed(_ *gocui.Gui, _ *gocui.View) error {
 	ui.keyPressed = "HOME"
 	return nil
 }
 
-func (ui *DebugUI) endPressed(g *gocui.Gui, v *gocui.View) error {
+func (ui *DebugUI) endPressed(_ *gocui.Gui, _ *gocui.View) error {
 	ui.keyPressed = "END"
 	return nil
 }
 
-func (ui *DebugUI) downPressed(g *gocui.Gui, v *gocui.View) error {
+func (ui *DebugUI) downPressed(_ *gocui.Gui, _ *gocui.View) error {
 	ui.keyPressed = "DOWN"
 	return nil
 }
 
-func (ui *DebugUI) upPressed(g *gocui.Gui, v *gocui.View) error {
+func (ui *DebugUI) upPressed(_ *gocui.Gui, _ *gocui.View) error {
 	ui.keyPressed = "UP"
 	return nil
 }
 
-func (ui *DebugUI) pgUpPressed(g *gocui.Gui, v *gocui.View) error {
+func (ui *DebugUI) pgUpPressed(_ *gocui.Gui, _ *gocui.View) error {
 	ui.keyPressed = "PGUP"
 	return nil
 }
 
-func (ui *DebugUI) pgDnPressed(g *gocui.Gui, v *gocui.View) error {
+func (ui *DebugUI) pgDnPressed(_ *gocui.Gui, _ *gocui.View) error {
 	ui.keyPressed = "PGDN"
 	return nil
 }
 
-func quit(g *gocui.Gui, v *gocui.View) error {
+func quit(_ *gocui.Gui, _ *gocui.View) error {
 	return gocui.ErrQuit
 }

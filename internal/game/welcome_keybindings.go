@@ -49,44 +49,40 @@ func (gs *GameState) WelcomeScreenKeybindings(g *gocui.Gui) error {
 		return err
 	}
 
-	if err := g.SetKeybinding("", gocui.KeyPgdn, gocui.ModNone, gs.pgDnPressed); err != nil {
-		return err
-	}
-
-	return nil
+	return g.SetKeybinding("", gocui.KeyPgdn, gocui.ModNone, gs.pgDnPressed)
 }
 
-func (gs *GameState) homePressed(g *gocui.Gui, v *gocui.View) error {
+func (gs *GameState) homePressed(_ *gocui.Gui, _ *gocui.View) error {
 	gs.keyPressed = "HOME"
 	return nil
 }
 
-func (gs *GameState) endPressed(g *gocui.Gui, v *gocui.View) error {
+func (gs *GameState) endPressed(_ *gocui.Gui, _ *gocui.View) error {
 	gs.keyPressed = "END"
 	return nil
 }
 
-func (gs *GameState) downPressed(g *gocui.Gui, v *gocui.View) error {
+func (gs *GameState) downPressed(_ *gocui.Gui, _ *gocui.View) error {
 	gs.keyPressed = "DOWN"
 	return nil
 }
 
-func (gs *GameState) upPressed(g *gocui.Gui, v *gocui.View) error {
+func (gs *GameState) upPressed(_ *gocui.Gui, _ *gocui.View) error {
 	gs.keyPressed = "UP"
 	return nil
 }
 
-func (gs *GameState) pgUpPressed(g *gocui.Gui, v *gocui.View) error {
+func (gs *GameState) pgUpPressed(_ *gocui.Gui, _ *gocui.View) error {
 	gs.keyPressed = "PGUP"
 	return nil
 }
 
-func (gs *GameState) pgDnPressed(g *gocui.Gui, v *gocui.View) error {
+func (gs *GameState) pgDnPressed(_ *gocui.Gui, _ *gocui.View) error {
 	gs.keyPressed = "PGDN"
 	return nil
 }
 
-func (gs *GameState) createMatch(g *gocui.Gui, v *gocui.View) error {
+func (gs *GameState) createMatch(g *gocui.Gui, _ *gocui.View) error {
 	if gs.Connected {
 		msg := `{"msgtype":"creatematch"}`
 		if err := gs.Ws.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
