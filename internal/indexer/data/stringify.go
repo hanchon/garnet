@@ -36,22 +36,20 @@ func processTable(ret *[]string, vT *Table) {
 	for kR, vR := range *vT.Rows {
 		// key := hexutil.Encode([]byte(kR))
 		*ret = append(*ret, fmt.Sprintf("    \u2609 ID    : %s", kR))
-		*ret = append(*ret, fmt.Sprintf("      Values:"))
+		*ret = append(*ret, "      Values:")
 		for _, b := range vR {
 			*ret = append(*ret, fmt.Sprintf("          \u26ad  %s", b.String()))
 		}
-		*ret = append(*ret, fmt.Sprintf(""))
+		*ret = append(*ret, "")
 
 	}
 }
 
 func SeparatorOffset(maxLenght int, wordLength int) int {
-	offset := 0
 	if (maxLenght-wordLength)%2 == 0 {
-		offset = (maxLenght - wordLength) / 2
+		return (maxLenght - wordLength) / 2
 	}
-	offset = (maxLenght - wordLength - 1) / 2
-	return offset
+	return (maxLenght - wordLength - 1) / 2
 }
 
 func (db Database) ToStringList(maxLenght int) []string {
@@ -75,7 +73,7 @@ func (db Database) ToStringList(maxLenght int) []string {
 		ret = append(ret, fmt.Sprintf("%s %s %s", gui.ColorCyan(gameTablesSeparator), gui.ColorBlue(titleGameTables), gui.ColorCyan(gameTablesSeparator)))
 		ret = append(ret, "")
 		for _, vT := range vW.Tables {
-			if isSystemTable(vT.Metadata.TableName) == false {
+			if !isSystemTable(vT.Metadata.TableName) {
 				processTable(&ret, vT)
 			} else {
 				processTable(&tempSysTables, vT)
@@ -88,9 +86,7 @@ func (db Database) ToStringList(maxLenght int) []string {
 		systemTablesSeparator := strings.Repeat("\u2632", (SeparatorOffset(maxLenght, len(titleSystemTables)) - 1))
 		ret = append(ret, fmt.Sprintf("%s %s %s", gui.ColorCyan(systemTablesSeparator), gui.ColorBlue(titleSystemTables), gui.ColorCyan(systemTablesSeparator)))
 		ret = append(ret, "")
-		for _, v := range tempSysTables {
-			ret = append(ret, v)
-		}
+		ret = append(ret, tempSysTables...)
 		ret = append(ret, "")
 	}
 	return ret

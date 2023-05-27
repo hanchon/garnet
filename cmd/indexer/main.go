@@ -17,7 +17,7 @@ const (
 func main() {
 	// Set the log output to a file (stdin, stdout, stderror used by GUI)
 	fileName := "logFile.log"
-	logFile, err := os.OpenFile(fileName, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+	logFile, err := os.OpenFile(fileName, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0o644)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -27,9 +27,9 @@ func main() {
 
 	// Send coins to user wallets
 	_, a, _ := txbuilder.GetWallet(0)
-	txbuilder.Faucet(a.Address.Hex())
+	_ = txbuilder.Faucet(a.Address.Hex())
 	_, a, _ = txbuilder.GetWallet(1)
-	txbuilder.Faucet(a.Address.Hex())
+	_ = txbuilder.Faucet(a.Address.Hex())
 
 	// Index the database
 	quit := false
@@ -45,7 +45,9 @@ func main() {
 	go ui.ProcessLatestEvents(database)
 
 	// Start the backend server
-	go backend.StartGorillaServer(port, database)
+	go func() {
+		_ = backend.StartGorillaServer(port, database)
+	}()
 
 	// Display the GUI
 	ui.Run()

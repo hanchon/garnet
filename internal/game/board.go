@@ -29,8 +29,8 @@ func board(pos ViewPosition, g *gocui.Gui) error {
 		offsetY := pos.startY + 1
 		endX := offsetX + mulX
 		endY := offsetY + mulY
-		for i := 0; i <= boardLimitX; i = i + 1 {
-			for j := 0; j <= boardLimitY; j = j + 1 {
+		for i := 0; i <= boardLimitX; i++ {
+			for j := 0; j <= boardLimitY; j++ {
 				if _, err := g.SetView(fmt.Sprintf("%s%d%d", boardViewName, j, i), offsetX, offsetY, endX, endY); err != nil {
 					if err != gocui.ErrUnknownView {
 						return err
@@ -44,7 +44,6 @@ func board(pos ViewPosition, g *gocui.Gui) error {
 					// 	fmt.Fprintln(v, "     P")
 					// }
 					// drawBase(10, 5, j, i, v)
-
 				}
 				offsetX = endX
 				endX = offsetX + mulX
@@ -60,7 +59,7 @@ func board(pos ViewPosition, g *gocui.Gui) error {
 
 func lineWithCastles(enemy bool) string {
 	castle := gui.ColorGreen("⛫")
-	if enemy == true {
+	if enemy {
 		castle = gui.ColorRed("⛫")
 	}
 	return fmt.Sprintf("%s\n", strings.Repeat(castle, 6))
@@ -70,21 +69,21 @@ func drawBase(p1Health int, p2Health int, currentX int, currentY int, v *gocui.V
 	// Player 1 base
 	if currentX == 4 && currentY == 0 {
 		fmt.Fprintf(v, "%d/10 %s\n", p1Health, drawHeart())
-		fmt.Fprintf(v, lineWithCastles(!isPlayerOne))
+		fmt.Fprint(v, lineWithCastles(!isPlayerOne))
 	}
 	if (currentX == 4 && currentY == 1) || (currentX == 5 && currentY == 0) || (currentX == 5 && currentY == 1) {
-		fmt.Fprintf(v, lineWithCastles(!isPlayerOne))
-		fmt.Fprintf(v, lineWithCastles(!isPlayerOne))
+		fmt.Fprint(v, lineWithCastles(!isPlayerOne))
+		fmt.Fprint(v, lineWithCastles(!isPlayerOne))
 	}
 
 	// Player 2 base
 	if currentX == 4 && currentY == 8 {
 		fmt.Fprintf(v, "%d/10 %s\n", p2Health, drawHeart())
-		fmt.Fprintf(v, lineWithCastles(isPlayerOne))
+		fmt.Fprint(v, lineWithCastles(isPlayerOne))
 	}
 	if (currentX == 4 && currentY == 9) || (currentX == 5 && currentY == 8) || (currentX == 5 && currentY == 9) {
-		fmt.Fprintf(v, lineWithCastles(isPlayerOne))
-		fmt.Fprintf(v, lineWithCastles(isPlayerOne))
+		fmt.Fprint(v, lineWithCastles(isPlayerOne))
+		fmt.Fprint(v, lineWithCastles(isPlayerOne))
 	}
 }
 
@@ -110,8 +109,8 @@ func (gs *GameState) updateBoard() error {
 		}
 	}
 
-	for i := 0; i <= boardLimitX; i = i + 1 {
-		for j := 0; j <= boardLimitY; j = j + 1 {
+	for i := 0; i <= boardLimitX; i++ {
+		for j := 0; j <= boardLimitY; j++ {
 			v, err := gs.ui.View(fmt.Sprintf("%s%d%d", boardViewName, i, j))
 			if err != nil {
 				return err

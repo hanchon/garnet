@@ -14,10 +14,6 @@ func writeMessage(ws *websocket.Conn, msg *string) error {
 	return ws.WriteMessage(websocket.TextMessage, []byte(*msg))
 }
 
-func writeBytes(ws *websocket.Conn, msg []byte) error {
-	return ws.WriteMessage(websocket.TextMessage, msg)
-}
-
 func removeConnection(ws *WebSocketContainer, g *GlobalState) {
 	ws.Conn.Close()
 	delete(g.WsSockets, ws.User)
@@ -83,13 +79,17 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 						ret = append(ret, k)
 					}
 					msg := MatchList{MsgType: "matchlist", Matches: ret}
-					ws.Conn.WriteJSON(msg)
+					err := ws.Conn.WriteJSON(msg)
+					if err != nil {
+						// TODO: close the connection
+						return
+					}
 					logger.LogDebug(fmt.Sprintf("[backend] sending %d active matches", len(ret)))
 				}
 			}
 
 		case "placecard":
-			if ws.Authenticated == false {
+			if !ws.Authenticated {
 				return
 			}
 
@@ -109,7 +109,7 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 			}
 
 			if len(id) != 32 {
-				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to place card: invalid length"))
+				logger.LogDebug("[backend] error creating transaction to place card: invalid length")
 				return
 			}
 
@@ -124,7 +124,7 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 			}
 
 		case "creatematch":
-			if ws.Authenticated == false {
+			if !ws.Authenticated {
 				return
 			}
 			err = txbuilder.SendTransaction(ws.WalletID, "creatematch")
@@ -134,7 +134,7 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 			}
 
 		case "joinmatch":
-			if ws.Authenticated == false {
+			if !ws.Authenticated {
 				return
 			}
 			logger.LogDebug("[backend] processing join match request")
@@ -156,7 +156,7 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 			}
 
 			if len(id) != 32 {
-				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to join match: invalid length"))
+				logger.LogDebug("[backend] error creating transaction to join match: invalid length")
 				return
 			}
 
@@ -172,7 +172,7 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 			}
 
 		case "endturn":
-			if ws.Authenticated == false {
+			if !ws.Authenticated {
 				return
 			}
 			logger.LogDebug("[backend] processing endturn request")
@@ -194,7 +194,7 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 			}
 
 			if len(id) != 32 {
-				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to endturn: invalid length"))
+				logger.LogDebug("[backend] error creating transaction to endturn: invalid length")
 				return
 			}
 
@@ -210,7 +210,7 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 			}
 
 		case "movecard":
-			if ws.Authenticated == false {
+			if !ws.Authenticated {
 				return
 			}
 
@@ -230,7 +230,7 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 			}
 
 			if len(id) != 32 {
-				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to move card: invalid length"))
+				logger.LogDebug("[backend] error creating transaction to move card: invalid length")
 				return
 			}
 
@@ -245,7 +245,7 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 			}
 
 		case "attack":
-			if ws.Authenticated == false {
+			if !ws.Authenticated {
 				return
 			}
 
@@ -265,7 +265,7 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 			}
 
 			if len(id) != 32 {
-				logger.LogDebug(fmt.Sprintf("[backend] error creating transaction to attack: invalid length"))
+				logger.LogDebug("[backend] error creating transaction to attack: invalid length")
 				return
 			}
 

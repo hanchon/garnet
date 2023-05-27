@@ -345,8 +345,8 @@ func (db *Database) GetCardsFromMatch(tableName string, rowID string, w *World) 
 	return IDs, nil
 }
 
-func (db *Database) GetBoardStatus(worldId string, userWallet string) *MatchData {
-	w, ok := db.Worlds[worldId]
+func (db *Database) GetBoardStatus(worldID string, userWallet string) *MatchData {
+	w, ok := db.Worlds[worldID]
 	if !ok {
 		logger.LogError("[backend] world not found")
 		return nil

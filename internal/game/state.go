@@ -27,7 +27,7 @@ type SummonedUnit struct {
 }
 
 type MatchState struct {
-	MatchId                string
+	MatchID                string
 	CurrentMana            int
 	UnitsSummonedByPlayer1 []int
 	UnitsSummonedByPlayer2 []int
@@ -42,7 +42,7 @@ const (
 	EndTurn      = "endturn"
 )
 
-type GameState struct {
+type GameState struct { //nolint: revive
 	MatchState           *MatchState
 	ListOfAvailableGames []string
 	Ws                   *websocket.Conn
@@ -54,7 +54,7 @@ type GameState struct {
 	done                         chan (struct{})
 	keyPressed                   string
 	currentScreen                string
-	lastDbUpdate                 time.Time // Last time we got new available games
+	lastDBUpdate                 time.Time // Last time we got new available games
 	lastRenderUpdate             time.Time // Last time we updated the displayed list of games
 	listOfAvailableGamesToRender []string
 	yOffset                      int
@@ -78,7 +78,7 @@ func NewGameState(ui *gocui.Gui, username string, password string) *GameState {
 		ui:                           ui,
 		keyPressed:                   "",
 		currentScreen:                "",
-		lastDbUpdate:                 time.Unix(0, 1),
+		lastDBUpdate:                 time.Unix(0, 1),
 		listOfAvailableGamesToRender: []string{},
 		yOffset:                      0,
 		lastRenderUpdate:             time.Unix(0, 0),
@@ -136,7 +136,7 @@ func InitWsConnection(gameState *GameState) *websocket.Conn {
 				}
 
 				if gameState.BoardStatus == nil {
-					gameState.ui.SetManagerFunc(GameLayout)
+					gameState.ui.SetManagerFunc(NewGameLayout)
 					if err := gameState.GameKeybindings(gameState.ui); err != nil {
 						logger.LogError("[client] failed to load game keybindings")
 					}

@@ -46,37 +46,42 @@ func BytesToStaticField(schemaType mudhelpers.SchemaType, encoding []byte, bytes
 	// number of bytes to read, since enums start from 0 and UINT8 is the first one.
 	if schemaType >= mudhelpers.UINT8 && schemaType <= mudhelpers.UINT256 {
 		return NewUintField(encoding[bytesOffset : bytesOffset+uint64(schemaType)+1])
-	} else
+	}
+
 	// INT8 - INT256 is the second range. We subtract UINT256 from the schema type
 	// to account for the first range and re-set the bytes count to start from 1.
 	if schemaType >= mudhelpers.INT8 && schemaType <= mudhelpers.INT256 {
 		return NewIntField(encoding[bytesOffset : bytesOffset+uint64(schemaType-mudhelpers.UINT256)])
-	} else
+	}
+
 	// BYTES is the third range. We subtract INT256 from the schema type to account
 	// for the previous ranges and re-set the bytes count to start from 1.
 	if schemaType >= mudhelpers.BYTES1 && schemaType <= mudhelpers.BYTES32 {
 		return NewBytesField(encoding[bytesOffset : bytesOffset+uint64(schemaType-mudhelpers.INT256)])
-	} else
+	}
+
 	// BOOL is a standalone schema type.
 	if schemaType == mudhelpers.BOOL {
 		return NewBoolField(encoding[bytesOffset])
-	} else
+	}
+
 	// ADDRESS is a standalone schema type.
 	if schemaType == mudhelpers.ADDRESS {
 		return NewAddressField(encoding[bytesOffset : bytesOffset+20])
-	} else
+	}
+
 	// STRING is a standalone schema type.
 	if schemaType == mudhelpers.STRING {
 		return NewStringField(encoding[bytesOffset:])
-	} else {
-		logger.LogError(
-			fmt.Sprintln(
-				"Unknown static field type",
-				zap.String("type", schemaType.String()),
-			),
-		)
-		return nil
 	}
+
+	logger.LogError(
+		fmt.Sprintln(
+			"Unknown static field type",
+			zap.String("type", schemaType.String()),
+		),
+	)
+	return nil
 }
 
 func AggregateKey(key [][32]byte) []byte {
@@ -88,7 +93,7 @@ func AggregateKey(key [][32]byte) []byte {
 }
 
 func BytesToFields(encoding []byte, schemaTypePair mudhelpers.SchemaTypePair, fieldnames *[]string) *[]Field {
-	var bytesOffset uint64 = 0
+	var bytesOffset uint64
 	ret := []Field{}
 
 	// Decode static fields.
@@ -113,8 +118,8 @@ func BytesToFields(encoding []byte, schemaTypePair mudhelpers.SchemaTypePair, fi
 	}
 
 	// Add the fields.
-	for idx, field_name := range *fieldnames {
-		ret[idx].Key = field_name
+	for idx, fieldName := range *fieldnames {
+		ret[idx].Key = fieldName
 	}
 
 	return &ret
@@ -148,11 +153,10 @@ func BytesToFieldWithDefaults(encoding []byte, schemaTypePair mudhelpers.SchemaT
 	}
 
 	// Add the fields.
-	for idx, field_name := range *fieldnames {
-		ret[idx].Key = field_name
+	for idx, fieldName := range *fieldnames {
+		ret[idx].Key = fieldName
 	}
 	modified.Key = (*fieldnames)[index]
 
 	return &ret, modified
-
 }

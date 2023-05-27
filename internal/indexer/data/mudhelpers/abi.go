@@ -8,8 +8,10 @@ import (
 	"github.com/hanchon/garnet/internal/logger"
 )
 
-var StorecoreAbi abi.ABI
-var events []string = []string{"StoreSetRecord", "StoreSetField", "StoreDeleteRecord"}
+var (
+	StorecoreAbi abi.ABI
+	events       []string = []string{"StoreSetRecord", "StoreSetField", "StoreDeleteRecord"}
+)
 
 func init() {
 	var err error

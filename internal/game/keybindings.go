@@ -17,8 +17,8 @@ func (gs *GameState) GameKeybindings(g *gocui.Gui) error {
 	}
 
 	// Board cells keybindings
-	for i := 0; i <= 9; i = i + 1 {
-		for j := 0; j <= 9; j = j + 1 {
+	for i := 0; i <= 9; i++ {
+		for j := 0; j <= 9; j++ {
 			key := fmt.Sprintf("%s%d%d", boardViewName, i, j)
 			if err := g.SetKeybinding(key, gocui.MouseLeft, gocui.ModNone, gs.boardMouseActionsHandler); err != nil {
 				return err
@@ -48,11 +48,20 @@ func (gs *GameState) selectCardFromPlayerActions(g *gocui.Gui, v *gocui.View) er
 	if cy == 10 {
 		logger.LogInfo(fmt.Sprintf("[client] sending end turn transaction for match %s", gs.BoardStatus.MatchID))
 		msg := messages.EndTurn{MsgType: "endturn", MatchID: gs.BoardStatus.MatchID}
-		gs.Ws.WriteJSON(msg)
+		if err := gs.Ws.WriteJSON(msg); err != nil {
+			// TODO: close the connection (?)
+			return nil
+		}
 		gs.notificationMessages = append(gs.notificationMessages, "sending end turn transaction")
-		gs.updateNotifications()
+		if err := gs.updateNotifications(); err != nil {
+			// TODO: move all the updates to a game cycle
+			return err
+		}
 		gs.CurrentAction = EndTurn
-		gs.updatePlayerActions()
+		if err := gs.updatePlayerActions(); err != nil {
+			// TODO: move all the updates to a game cycle
+			return err
+		}
 		return nil
 	}
 	// Select card checks
@@ -99,7 +108,10 @@ func (gs *GameState) selectCardFromPlayerActions(g *gocui.Gui, v *gocui.View) er
 			gs.selectCard(currentCard.Position.X, currentCard.Position.Y)
 			logger.LogDebug("[client] the card was already summoned")
 			gs.notificationMessages = append(gs.notificationMessages, "the selected card was already summoned")
-			gs.updateNotifications()
+			if err := gs.updateNotifications(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
 			return nil
 		}
 
@@ -107,7 +119,10 @@ func (gs *GameState) selectCardFromPlayerActions(g *gocui.Gui, v *gocui.View) er
 		if gs.BoardStatus.CurrentMana < 3 {
 			logger.LogInfo("[client] not enough mana to summon")
 			gs.notificationMessages = append(gs.notificationMessages, "there is not enough mana tu summon a new card")
-			gs.updateNotifications()
+			if err := gs.updateNotifications(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
 			return nil
 		}
 
@@ -122,7 +137,10 @@ func (gs *GameState) selectCardFromPlayerActions(g *gocui.Gui, v *gocui.View) er
 		if totalSummons >= 3 {
 			logger.LogInfo("[client] all the summons were used")
 			gs.notificationMessages = append(gs.notificationMessages, "all the summon actions were already used")
-			gs.updateNotifications()
+			if err := gs.updateNotifications(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
 			return nil
 		}
 
@@ -165,7 +183,8 @@ func (gs *GameState) boardMouseActionsHandler(g *gocui.Gui, v *gocui.View) error
 		return fmt.Errorf("could not parse y")
 	}
 
-	if gs.CurrentAction == SummonAction {
+	switch gs.CurrentAction {
+	case SummonAction:
 		if v.BgColor == gocui.ColorCyan {
 			// Summon available
 			msg := messages.PlaceCard{
@@ -179,27 +198,53 @@ func (gs *GameState) boardMouseActionsHandler(g *gocui.Gui, v *gocui.View) error
 				logger.LogError(fmt.Sprintf("[client] could not send place card message: %s", err))
 			}
 			gs.notificationMessages = append(gs.notificationMessages, "sending summon transaction")
-			gs.updateNotifications()
+			if err := gs.updateNotifications(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
 
 			gs.CurrentAction = EmptyAction
 			gs.UnitSelected = ""
-			gs.updateBoard()
-			gs.updatePlayerActions()
-			gs.updateCardInfo()
+
+			if err := gs.updateBoard(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
+			if err := gs.updatePlayerActions(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
+			if err := gs.updateCardInfo(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
 		} else {
-			gs.notificationMessages = append(gs.notificationMessages, "summon cancelled")
-			gs.updateNotifications()
+			gs.notificationMessages = append(gs.notificationMessages, "summon canceled")
+			if err := gs.updateNotifications(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
 
 			gs.CurrentAction = EmptyAction
 			gs.UnitSelected = ""
-			gs.updateBoard()
-			gs.updatePlayerActions()
-			gs.updateCardInfo()
+			if err := gs.updateBoard(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
+			if err := gs.updatePlayerActions(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
+			if err := gs.updateCardInfo(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
 		}
-	} else if gs.CurrentAction == MoveAction {
-		if v.BgColor == gocui.ColorYellow {
+	case MoveAction:
+		switch v.BgColor {
+		case gocui.ColorYellow:
 			// Move
-			logger.LogInfo(fmt.Sprintf("[client] move card to pos"))
+			logger.LogInfo("[client] move card to pos")
 			// TODO: this may fail if the user selects another card from the left table, make sure to clean the board background on unitselected changes
 			msg := messages.MoveCard{
 				MsgType: "movecard",
@@ -213,16 +258,29 @@ func (gs *GameState) boardMouseActionsHandler(g *gocui.Gui, v *gocui.View) error
 			}
 
 			gs.notificationMessages = append(gs.notificationMessages, "sending move transaction")
-			gs.updateNotifications()
+
+			if err := gs.updateNotifications(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
 
 			gs.CurrentAction = EmptyAction
 			gs.UnitSelected = ""
-			gs.updateBoard()
-			gs.updatePlayerActions()
-			gs.updateCardInfo()
-		} else if v.BgColor == attackBackgroundColor {
+			if err := gs.updateBoard(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
+			if err := gs.updatePlayerActions(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
+			if err := gs.updateCardInfo(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
+		case attackBackgroundColor:
 			// Move
-			logger.LogInfo(fmt.Sprintf("[client] attack to pos"))
+			logger.LogInfo("[client] attack to pos")
 			// TODO: this may fail if the user selects another card from the left table, make sure to clean the board background on unitselected changes
 			msg := messages.Attack{
 				MsgType: "attack",
@@ -235,20 +293,36 @@ func (gs *GameState) boardMouseActionsHandler(g *gocui.Gui, v *gocui.View) error
 				logger.LogError(fmt.Sprintf("[client] could not send attack message: %s", err))
 			}
 			gs.notificationMessages = append(gs.notificationMessages, "sending attack transaction")
-			gs.updateNotifications()
+			if err := gs.updateNotifications(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
 
 			gs.CurrentAction = EmptyAction
 			gs.UnitSelected = ""
-			gs.updateBoard()
-			gs.updatePlayerActions()
-			gs.updateCardInfo()
-		} else {
+			if err := gs.updateBoard(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
+			if err := gs.updatePlayerActions(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
+			if err := gs.updateCardInfo(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
+		default:
 			gs.notificationMessages = append(gs.notificationMessages, "stopping current action")
-			gs.updateNotifications()
+			if err := gs.updateNotifications(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return err
+			}
 			gs.CurrentAction = EmptyAction
 			gs.selectCard(x, y)
 		}
-	} else {
+
+	default:
 		gs.selectCard(x, y)
 	}
 
@@ -256,32 +330,52 @@ func (gs *GameState) boardMouseActionsHandler(g *gocui.Gui, v *gocui.View) error
 }
 
 func (gs *GameState) selectCard(x int64, y int64) {
-	gs.updateBoard()
+	if err := gs.updateBoard(); err != nil {
+		// TODO: move all the updates to a game cycle
+		return
+	}
 
 	gs.UnitSelected = ""
 	for _, value := range gs.BoardStatus.Cards {
 		if value.Position.X == x && value.Position.Y == y {
 			gs.UnitSelected = value.ID
 			gs.notificationMessages = append(gs.notificationMessages, fmt.Sprintf("card selected, pos x:%d, y:%d", x, y))
-			gs.updateNotifications()
+
+			if err := gs.updateNotifications(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return
+			}
 
 			// Update tables
-			gs.updateCardInfo()
-			gs.updatePlayerActions()
+			if err := gs.updateCardInfo(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return
+			}
+			if err := gs.updatePlayerActions(); err != nil {
+				// TODO: move all the updates to a game cycle
+				return
+			}
+
 			// If the unit owner is the user, display the movement places
 			for _, card := range gs.GetUserCards() {
 				if card.ID == value.ID {
 					if gs.BoardStatus.CurrentMana <= 1 {
 						gs.CurrentAction = EmptyAction
 						gs.notificationMessages = append(gs.notificationMessages, "not enough mana to execute any action, please end turn")
-						gs.updateNotifications()
+						if err := gs.updateNotifications(); err != nil {
+							// TODO: move all the updates to a game cycle
+							return
+						}
 						return
 					}
-					if card.ActionReady == false {
+					if !card.ActionReady {
 						gs.CurrentAction = EmptyAction
 						logger.LogDebug("[client] the selected card already used its action")
 						gs.notificationMessages = append(gs.notificationMessages, "selected card already executed this turn attack action")
-						gs.updateNotifications()
+						if err := gs.updateNotifications(); err != nil {
+							// TODO: move all the updates to a game cycle
+							return
+						}
 						return
 					}
 					gs.CurrentAction = MoveAction
@@ -292,8 +386,15 @@ func (gs *GameState) selectCard(x int64, y int64) {
 			}
 		}
 	}
-	gs.updateCardInfo()
-	gs.updatePlayerActions()
+	// Update tables
+	if err := gs.updateCardInfo(); err != nil {
+		// TODO: move all the updates to a game cycle
+		return
+	}
+	if err := gs.updatePlayerActions(); err != nil {
+		// TODO: move all the updates to a game cycle
+		return
+	}
 }
 
 func quit(g *gocui.Gui, v *gocui.View) error {

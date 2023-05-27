@@ -10,16 +10,16 @@ import (
 )
 
 func HandleGenericTableEvent(event *mudhelpers.StorecoreStoreSetRecord, db *data.Database) {
-	tableId := mudhelpers.PaddedTableId(event.TableId)
+	tableID := mudhelpers.PaddedTableId(event.TableId)
 	logger.LogDebug(
 		fmt.Sprintln(
 			"handling generic table event",
 			zap.String("world_address", event.WorldAddress()),
-			zap.String("table_id", tableId),
+			zap.String("table_id", tableID),
 		),
 	)
 
-	table := db.GetTable(event.WorldAddress(), tableId)
+	table := db.GetTable(event.WorldAddress(), tableID)
 
 	// Decode the row record data
 	fields := data.BytesToFields(event.Data, *table.Schema.Schema.Value, table.Schema.FieldNames)

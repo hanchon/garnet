@@ -13,9 +13,11 @@ import (
 	hdwallet "github.com/miguelmota/go-ethereum-hdwallet"
 )
 
-var mnemonic = "eternal envelope hat fame output noble roast screen bulk mind beyond sun brass dolphin wealth solid tone age diagram wall nothing often use delay"
-var worldAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
-var endpoint = "http://localhost:8545"
+var (
+	mnemonic     = "eternal envelope hat fame output noble roast screen bulk mind beyond sun brass dolphin wealth solid tone age diagram wall nothing often use delay"
+	worldAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3"
+	endpoint     = "http://localhost:8545"
+)
 
 func GetWallet(accountID int) (*hdwallet.Wallet, accounts.Account, error) {
 	wallet, err := hdwallet.NewFromMnemonic(mnemonic)

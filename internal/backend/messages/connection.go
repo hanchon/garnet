@@ -85,7 +85,7 @@ func (g *GlobalState) BroadcastUpdates() {
 			if len(g.WsSockets) != 0 {
 				timestamp := g.Database.LastUpdate
 				if g.LastBroadcastTime != timestamp {
-					logger.LogDebug(fmt.Sprintf("[backend] database was updated, broadcasting messages..."))
+					logger.LogDebug("[backend] database was updated, broadcasting messages...")
 
 					w, ok := g.Database.Worlds[WorldID]
 					if !ok {

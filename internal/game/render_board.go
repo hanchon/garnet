@@ -37,7 +37,7 @@ func (gs *GameState) UpdateBoard() {
 					rerender = true
 				}
 
-				if rerender == true {
+				if rerender {
 					gs.ui.Update(func(g *gocui.Gui) error {
 						err := gs.updatePlayerActions()
 						if err != nil {

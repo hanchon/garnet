@@ -27,7 +27,7 @@ func EmptyLayout(g *gocui.Gui) error {
 	return nil
 }
 
-func GameLayout(g *gocui.Gui) error {
+func NewGameLayout(g *gocui.Gui) error {
 	if err := cardInfo(
 		ViewPosition{
 			startX: leftOffset,

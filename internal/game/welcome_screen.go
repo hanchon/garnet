@@ -30,7 +30,7 @@ func WelcomeScreenLayout(g *gocui.Gui) error {
 		}
 		v.Frame = false
 
-		fmt.Fprintf(v, gui.ColorRed(`
+		fmt.Fprint(v, gui.ColorRed(`
 ___________ __                             .__
 \_   _____//  |_  ___________  ____ _____  |  |
  |    __)_\   __\/ __ \_  __ \/    \\__  \ |  |
@@ -138,5 +138,4 @@ func RenderWelcomeTable(data []string, v *gocui.View, arrowTop bool, arrowButton
 		gui.ColorGreen(strings.Repeat("\u2550", 16)),
 		gui.ColorGreen("\u255D"),
 	)
-
 }

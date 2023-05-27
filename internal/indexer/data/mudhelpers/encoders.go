@@ -235,7 +235,6 @@ func (tuple *SchemaTypePair) Flatten() []SchemaType {
 }
 
 func DecodeSchemaTypePair(encoding []byte) *SchemaTypePair {
-
 	staticDataLength := new(big.Int).SetBytes(encoding[0:2]).Uint64()
 	numStaticFields := new(big.Int).SetBytes(encoding[2:3]).Uint64()
 	numDynamicFields := new(big.Int).SetBytes(encoding[3:4]).Uint64()
@@ -444,7 +443,6 @@ func DecodeDataField__DecodedData(encoding []byte, schemaTypePair SchemaTypePair
 	}
 	logger.LogError(fmt.Sprintln("could not decode data field at index", zap.Uint8("index", index)))
 	return nil
-
 }
 
 // DecodeData decodes the given byte slice `encoding` into a `DecodedData` object

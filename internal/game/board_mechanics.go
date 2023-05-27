@@ -40,7 +40,6 @@ func (gs *GameState) setAttackPosition(x, y int64, myUser string) {
 		if (x == 4 || x == 5) && (y == 0 || y == 1) {
 			setBackgroundColor(fmt.Sprintf("%s%d%d", boardViewName, x, y), attackBackgroundColor, gs.ui)
 		}
-
 	}
 	for _, v := range gs.BoardStatus.Cards {
 		if v.Position.X == x && v.Position.Y == y && v.Owner != myUser {
@@ -48,7 +47,6 @@ func (gs *GameState) setAttackPosition(x, y int64, myUser string) {
 			return
 		}
 	}
-
 }
 
 func (gs *GameState) GetUserWallet() string {
@@ -69,7 +67,6 @@ func (gs *GameState) drawAttackPlaces(x, y int64) {
 }
 
 func (gs *GameState) drawMovementPlaces(x, y int64, speed int64) {
-
 	if speed >= 1 {
 		gs.setMovementPosition(x, y+1, gocui.ColorYellow)
 		gs.setMovementPosition(x, y-1, gocui.ColorYellow)

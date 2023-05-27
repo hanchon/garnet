@@ -18,7 +18,7 @@ func main() {
 
 	// Set the log output to a file (stdin, stdout, stderror used by GUI)
 	fileName := "client.log"
-	logFile, err := os.OpenFile(fileName, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0644)
+	logFile, err := os.OpenFile(fileName, os.O_APPEND|os.O_RDWR|os.O_CREATE, 0o644)
 	if err != nil {
 		log.Panic(err)
 	}
@@ -49,7 +49,10 @@ func main() {
 		User:     state.Username,
 		Password: state.Password,
 	}
-	state.Ws.WriteJSON(msg)
+	if err := state.Ws.WriteJSON(msg); err != nil {
+		// Could not send the connect message to the server
+		log.Panicln(err)
+	}
 
 	go state.UpdateMatches()
 	go state.UpdateBoard()

@@ -12,10 +12,10 @@ import (
 	"github.com/hanchon/garnet/internal/logger"
 )
 
-func GetEthereumClient(wsUrl string) *ethclient.Client {
+func GetEthereumClient(wsURL string) *ethclient.Client {
 	var client *ethclient.Client
 	var err error
-	client, err = ethclient.Dial(wsUrl)
+	client, err = ethclient.Dial(wsURL)
 	if err != nil {
 		// TODO: add retry in case of failure instead of panic
 		logger.LogError("could not connect to the ethereum client")

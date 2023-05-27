@@ -10,15 +10,15 @@ import (
 )
 
 func HandleSetFieldEvent(event *mudhelpers.StorecoreStoreSetField, db *data.Database) {
-	tableId := mudhelpers.PaddedTableId(event.TableId)
+	tableID := mudhelpers.PaddedTableId(event.TableId)
 	logger.LogDebug(
 		fmt.Sprintln(
 			"handling set field (StoreSetFieldEvent) event",
-			zap.String("table_id", tableId),
+			zap.String("table_id", tableID),
 		),
 	)
 
-	table := db.GetTable(event.WorldAddress(), tableId)
+	table := db.GetTable(event.WorldAddress(), tableID)
 
 	// Handle the following scenarios:
 	// 1. The setField event is modifying a row that doesn't yet exist (i.e. key doesn't match anything),
@@ -30,5 +30,4 @@ func HandleSetFieldEvent(event *mudhelpers.StorecoreStoreSetField, db *data.Data
 	key := data.AggregateKey(event.Key)
 
 	db.SetField(table, key, event)
-
 }
