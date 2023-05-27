@@ -10,15 +10,15 @@ import (
 )
 
 func HandleDeleteRecordEvent(event *mudhelpers.StorecoreStoreDeleteRecord, db *data.Database) {
-	tableId := mudhelpers.PaddedTableId(event.TableId)
+	tableID := mudhelpers.PaddedTableId(event.TableId)
 	logger.LogDebug(
 		fmt.Sprintln(
 			"handling delete record event",
-			zap.String("table_id", tableId),
+			zap.String("table_id", tableID),
 		),
 	)
 
-	table := db.GetTable(event.WorldAddress(), tableId)
+	table := db.GetTable(event.WorldAddress(), tableID)
 
 	aggregateKey := data.AggregateKey(event.Key)
 

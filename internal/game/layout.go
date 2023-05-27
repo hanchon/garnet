@@ -23,11 +23,7 @@ const (
 	boardHeight     = topOffset + 32
 )
 
-func EmptyLayout(g *gocui.Gui) error {
-	return nil
-}
-
-func GameLayout(g *gocui.Gui) error {
+func NewGameLayout(g *gocui.Gui) error {
 	if err := cardInfo(
 		ViewPosition{
 			startX: leftOffset,
@@ -75,7 +71,8 @@ func GameLayout(g *gocui.Gui) error {
 	); err != nil {
 		return err
 	}
-	if err := notifications(
+
+	return notifications(
 		ViewPosition{
 			startX: leftOffset,
 			startY: boardHeight + 1,
@@ -83,9 +80,5 @@ func GameLayout(g *gocui.Gui) error {
 			endY:   boardHeight + 9,
 		},
 		g,
-	); err != nil {
-		return err
-	}
-
-	return nil
+	)
 }

@@ -13,16 +13,16 @@ import (
 )
 
 func HandleMetadataTableEvent(event *mudhelpers.StorecoreStoreSetRecord, db *data.Database) {
-	tableId := hexutil.Encode(event.Key[0][:])
+	tableID := hexutil.Encode(event.Key[0][:])
 	logger.LogDebug(
 		fmt.Sprintln(
 			"handling metadata table event",
 			zap.String("world_address", event.WorldAddress()),
-			zap.String("table_id", tableId),
+			zap.String("table_id", tableID),
 		),
 	)
 	world := db.GetWorld(event.WorldAddress())
-	table := world.GetTable(tableId)
+	table := world.GetTable(tableID)
 	metadata := world.GetTable(mudhelpers.MetadataTableId())
 
 	decodedMetadata := mudhelpers.DecodeData(event.Data, *metadata.Schema.Schema.Value)
@@ -73,5 +73,5 @@ func HandleMetadataTableEvent(event *mudhelpers.StorecoreStoreSetRecord, db *dat
 	fields := data.BytesToFields(event.Data, *metadata.Schema.Schema.Value, metadata.Schema.FieldNames)
 	// key := tableId
 	// (*metadata.Rows)[key] = *fields
-	db.AddRow(metadata, []byte(tableId), fields)
+	db.AddRow(metadata, []byte(tableID), fields)
 }

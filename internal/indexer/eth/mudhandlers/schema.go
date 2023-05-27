@@ -11,16 +11,16 @@ import (
 )
 
 func HandleSchemaTableEvent(event *mudhelpers.StorecoreStoreSetRecord, database *data.Database) {
-	tableId := hexutil.Encode(event.Key[0][:])
+	tableID := hexutil.Encode(event.Key[0][:])
 	logger.LogDebug(
 		fmt.Sprintln(
 			"handling schema table event",
 			zap.String("world_address", event.WorldAddress()),
-			zap.String("table_id", tableId),
+			zap.String("table_id", tableID),
 		),
 	)
 	world := database.GetWorld(event.WorldAddress())
-	table := world.GetTable(tableId)
+	table := world.GetTable(tableID)
 
 	// Parse out the schema types (both static and dynamic) for the table.
 	keySchemaBytes32, valueSchemaBytes32 := event.Data[:32], event.Data[32:]

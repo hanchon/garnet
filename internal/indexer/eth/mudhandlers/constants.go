@@ -1,3 +1,3 @@
 package mudhandlers
 
-var ChainID string = "0000"
+var ChainID = "0000"

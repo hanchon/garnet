@@ -36,12 +36,3 @@ func connectMessage(ws *WebSocketContainer, registeredUsers map[string]User, p *
 	logger.LogInfo(fmt.Sprintf("[backend] user connected: %s (%s)", ws.User, ws.WalletAddress))
 	return nil
 }
-
-func getMatchStatus(p *[]byte) (string, error) {
-	var msg GetMatchStatus
-	err := json.Unmarshal(*p, &msg)
-	if err != nil {
-		return "", err
-	}
-	return msg.MatchID, nil
-}

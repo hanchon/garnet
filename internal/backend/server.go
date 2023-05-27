@@ -3,6 +3,7 @@ package backend
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/mux"
 	"github.com/hanchon/garnet/internal/backend/cors"
@@ -19,5 +20,11 @@ func StartGorillaServer(port int, database *data.Database) error {
 	go g.BroadcastUpdates()
 
 	cors.ServerEnableCORS(router)
-	return http.ListenAndServe(fmt.Sprint(":", port), router)
+
+	server := &http.Server{
+		Addr:              fmt.Sprint(":", port),
+		Handler:           router,
+		ReadHeaderTimeout: 3 * time.Second,
+	}
+	return server.ListenAndServe()
 }

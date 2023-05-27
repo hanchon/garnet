@@ -13,7 +13,6 @@ import (
 )
 
 func (gs *GameState) WelcomeScreenKeybindings(g *gocui.Gui) error {
-
 	if err := g.SetKeybinding(createGameViewName, gocui.MouseLeft, gocui.ModNone, gs.createMatch); err != nil {
 		return err
 	}
@@ -50,46 +49,45 @@ func (gs *GameState) WelcomeScreenKeybindings(g *gocui.Gui) error {
 		return err
 	}
 
-	if err := g.SetKeybinding("", gocui.KeyPgdn, gocui.ModNone, gs.pgDnPressed); err != nil {
-		return err
-	}
-
-	return nil
+	return g.SetKeybinding("", gocui.KeyPgdn, gocui.ModNone, gs.pgDnPressed)
 }
 
-func (gs *GameState) homePressed(g *gocui.Gui, v *gocui.View) error {
+func (gs *GameState) homePressed(_ *gocui.Gui, _ *gocui.View) error {
 	gs.keyPressed = "HOME"
 	return nil
 }
-func (gs *GameState) endPressed(g *gocui.Gui, v *gocui.View) error {
+
+func (gs *GameState) endPressed(_ *gocui.Gui, _ *gocui.View) error {
 	gs.keyPressed = "END"
 	return nil
 }
 
-func (gs *GameState) downPressed(g *gocui.Gui, v *gocui.View) error {
+func (gs *GameState) downPressed(_ *gocui.Gui, _ *gocui.View) error {
 	gs.keyPressed = "DOWN"
 	return nil
 }
 
-func (gs *GameState) upPressed(g *gocui.Gui, v *gocui.View) error {
+func (gs *GameState) upPressed(_ *gocui.Gui, _ *gocui.View) error {
 	gs.keyPressed = "UP"
 	return nil
 }
 
-func (gs *GameState) pgUpPressed(g *gocui.Gui, v *gocui.View) error {
+func (gs *GameState) pgUpPressed(_ *gocui.Gui, _ *gocui.View) error {
 	gs.keyPressed = "PGUP"
 	return nil
 }
 
-func (gs *GameState) pgDnPressed(g *gocui.Gui, v *gocui.View) error {
+func (gs *GameState) pgDnPressed(_ *gocui.Gui, _ *gocui.View) error {
 	gs.keyPressed = "PGDN"
 	return nil
 }
 
-func (gs *GameState) createMatch(g *gocui.Gui, v *gocui.View) error {
+func (gs *GameState) createMatch(g *gocui.Gui, _ *gocui.View) error {
 	if gs.Connected {
 		msg := `{"msgtype":"creatematch"}`
-		gs.Ws.WriteMessage(websocket.TextMessage, []byte(msg))
+		if err := gs.Ws.WriteMessage(websocket.TextMessage, []byte(msg)); err != nil {
+			return err
+		}
 		// TODO: disable keybindings, getting the new game will change the view to the board view
 		if v, err := g.SetView("msg", leftOffset, welcomeLogoHeight+4, boardWidth, welcomeLogoHeight+9); err != nil {
 			if err != gocui.ErrUnknownView {
@@ -214,7 +212,6 @@ func (gs *GameState) clickOnTable(g *gocui.Gui, v *gocui.View) error {
 		}
 	}
 	return nil
-
 }
 
 func (gs *GameState) UpdateMatches() {
@@ -224,7 +221,7 @@ func (gs *GameState) UpdateMatches() {
 			return
 		case <-time.After(50 * time.Millisecond):
 			rerender := false
-			lastUpdate := gs.lastDbUpdate
+			lastUpdate := gs.lastDBUpdate
 			if gs.lastRenderUpdate != lastUpdate {
 				gs.lastRenderUpdate = lastUpdate
 				gs.listOfAvailableGamesToRender = gs.ListOfAvailableGames
@@ -237,19 +234,19 @@ func (gs *GameState) UpdateMatches() {
 				}
 
 				if gs.keyPressed == "DOWN" {
-					gs.yOffset = gs.yOffset + 1
+					gs.yOffset++
 				}
 
 				if gs.keyPressed == "UP" {
-					gs.yOffset = gs.yOffset - 1
+					gs.yOffset--
 				}
 
 				if gs.keyPressed == "PGUP" {
-					gs.yOffset = gs.yOffset - maxLines
+					gs.yOffset -= maxLines
 				}
 
 				if gs.keyPressed == "PGDN" {
-					gs.yOffset = gs.yOffset + maxLines
+					gs.yOffset += maxLines
 				}
 
 				if gs.keyPressed == "END" {
@@ -268,7 +265,7 @@ func (gs *GameState) UpdateMatches() {
 				rerender = true
 			}
 
-			if rerender == true {
+			if rerender {
 				if len(gs.listOfAvailableGamesToRender) == 0 {
 					continue
 				}

@@ -27,8 +27,5 @@ func middlewareCors(next http.Handler) http.Handler {
 
 func SetHandlerCorsForOptions(request *http.Request, response *http.ResponseWriter) bool {
 	(*response).Header().Set("Access-Control-Allow-Origin", "*")
-	if (*request).Method == http.MethodOptions {
-		return true
-	}
-	return false
+	return request.Method == http.MethodOptions
 }

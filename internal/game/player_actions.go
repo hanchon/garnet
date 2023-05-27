@@ -32,13 +32,13 @@ func currentMana(mana int64) string {
 	return fmt.Sprintf(" Current Mana: %s%s\n", manaString, drawMana())
 }
 
-type UiCard struct {
+type UICard struct {
 	Name   string
 	ID     int64
 	Symbol string
 }
 
-var TypeOfCards = []UiCard{
+var TypeOfCards = []UICard{
 	{
 		Name:   "Vaan Strife",
 		ID:     0,
@@ -101,7 +101,7 @@ func renderUnits(v *gocui.View, summoned map[int64]bool, optionWithBackground in
 			val = false
 		}
 		text := renderUnit(val, card.Name, card.Symbol, k == optionWithBackground)
-		fmt.Fprintf(v, text)
+		fmt.Fprint(v, text)
 	}
 }
 
@@ -142,7 +142,7 @@ func (gs *GameState) updatePlayerActions() error {
 	}
 
 	v.Clear()
-	fmt.Fprintf(v, currentMana(gs.BoardStatus.CurrentMana))
+	fmt.Fprint(v, currentMana(gs.BoardStatus.CurrentMana))
 	fmt.Fprintln(v, "─────────────────────", optionWithBackground)
 	fmt.Fprintf(v, " Summon (3%s): %s%s\n", drawMana(), strings.Repeat("◯", summoned), strings.Repeat("◉", 3-summoned))
 	renderUnits(v, s, optionWithBackground)

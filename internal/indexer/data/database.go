@@ -18,7 +18,7 @@ type Event struct {
 }
 
 type TableMetadata struct {
-	TableId          string
+	TableID          string
 	TableName        string
 	OnChainTableName string
 	WorldAddress     string
@@ -54,16 +54,16 @@ func (w *World) GetTableByName(tableName string) *Table {
 	return nil
 }
 
-func (w *World) GetTable(tableId string) *Table {
-	if table, ok := w.Tables[tableId]; ok {
+func (w *World) GetTable(tableID string) *Table {
+	if table, ok := w.Tables[tableID]; ok {
 		return table
 	}
-	w.Tables[tableId] = &Table{
-		Metadata: &TableMetadata{TableId: tableId, TableName: "", OnChainTableName: "", WorldAddress: w.Address},
+	w.Tables[tableID] = &Table{
+		Metadata: &TableMetadata{TableID: tableID, TableName: "", OnChainTableName: "", WorldAddress: w.Address},
 		Schema:   &TableSchema{FieldNames: &[]string{}, KeyNames: &[]string{}, Schema: &mudhelpers.SchemaTypeKV{}, NamedFields: &map[string]mudhelpers.SchemaType{}},
 		Rows:     &map[string][]Field{},
 	}
-	table, _ := w.Tables[tableId]
+	table := w.Tables[tableID]
 	return table
 }
 
@@ -90,30 +90,30 @@ func (db *Database) AddEvent(tableName string, key string, fields *[]Field) {
 	if fields != nil {
 		value = "{"
 		for i, v := range *fields {
-			value = value + v.String()
+			value += v.String()
 			if i != len(*fields)-1 {
-				value = value + ","
+				value += ","
 			}
 		}
-		value = value + "}"
+		value += "}"
 	}
 	db.Events = append(db.Events, Event{Table: tableName, Row: key, Value: value})
 	db.LastUpdate = time.Now()
 }
 
-func (db *Database) GetWorld(worldId string) *World {
-	if world, ok := db.Worlds[worldId]; ok {
+func (db *Database) GetWorld(worldID string) *World {
+	if world, ok := db.Worlds[worldID]; ok {
 		return world
 	}
-	db.Worlds[worldId] = &World{Address: worldId, Tables: map[string]*Table{}}
-	logger.LogInfo(fmt.Sprintf("new world registered %s", worldId))
-	world, _ := db.Worlds[worldId]
+	db.Worlds[worldID] = &World{Address: worldID, Tables: map[string]*Table{}}
+	logger.LogInfo(fmt.Sprintf("new world registered %s", worldID))
+	world := db.Worlds[worldID]
 	return world
 }
 
-func (db *Database) GetTable(worldId string, tableId string) *Table {
-	world := db.GetWorld(worldId)
-	return world.GetTable(tableId)
+func (db *Database) GetTable(worldID string, tableID string) *Table {
+	world := db.GetWorld(worldID)
+	return world.GetTable(tableID)
 }
 
 func (db *Database) AddRow(table *Table, key []byte, fields *[]Field) {
@@ -153,8 +153,6 @@ func (db *Database) DeleteRow(table *Table, key []byte) {
 	// keyAsString := string(key)
 	keyAsString := hexutil.Encode(key)
 	// TODO: add locks here
-	if _, ok := (*table.Rows)[keyAsString]; ok {
-		delete((*table.Rows), keyAsString)
-	}
+	delete((*table.Rows), keyAsString)
 	db.AddEvent(table.Metadata.TableName, keyAsString, nil)
 }

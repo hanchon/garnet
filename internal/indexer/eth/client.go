@@ -12,10 +12,10 @@ import (
 	"github.com/hanchon/garnet/internal/logger"
 )
 
-func GetEthereumClient(wsUrl string) *ethclient.Client {
+func GetEthereumClient(wsURL string) *ethclient.Client {
 	var client *ethclient.Client
 	var err error
-	client, err = ethclient.Dial(wsUrl)
+	client, err = ethclient.Dial(wsURL)
 	if err != nil {
 		// TODO: add retry in case of failure instead of panic
 		logger.LogError("could not connect to the ethereum client")
@@ -41,18 +41,17 @@ func ProcessBlocks(c *ethclient.Client, db *data.Database, initBlockHeight *big.
 				logger.LogError(fmt.Sprintf("error decoding message:%s", err))
 				// TODO: what should we do here?
 				break
-			} else {
-				switch mudhelpers.PaddedTableId(event.TableId) {
-				case mudhelpers.SchemaTableId():
-					logger.LogInfo("processing and creating schema table")
-					mudhandlers.HandleSchemaTableEvent(event, db)
-				case mudhelpers.MetadataTableId():
-					logger.LogInfo("processing and updating a schema with metadata")
-					mudhandlers.HandleMetadataTableEvent(event, db)
-				default:
-					logger.LogInfo("processing a generic table event like adding a row")
-					mudhandlers.HandleGenericTableEvent(event, db)
-				}
+			}
+			switch mudhelpers.PaddedTableId(event.TableId) {
+			case mudhelpers.SchemaTableId():
+				logger.LogInfo("processing and creating schema table")
+				mudhandlers.HandleSchemaTableEvent(event, db)
+			case mudhelpers.MetadataTableId():
+				logger.LogInfo("processing and updating a schema with metadata")
+				mudhandlers.HandleMetadataTableEvent(event, db)
+			default:
+				logger.LogInfo("processing a generic table event like adding a row")
+				mudhandlers.HandleGenericTableEvent(event, db)
 			}
 		}
 

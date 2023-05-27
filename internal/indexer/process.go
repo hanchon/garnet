@@ -14,13 +14,13 @@ func Process(database *data.Database, quit *bool) {
 	logger.LogInfo("indexer is starting...")
 	c := eth.GetEthereumClient("http://localhost:8545/")
 	ctx := context.Background()
-	chainId, err := c.ChainID(ctx)
+	chainID, err := c.ChainID(ctx)
 	if err != nil {
 		logger.LogError("could not get the latest height")
 		// TODO: retry instead of panic
 		panic("")
 	}
-	database.ChainID = chainId.String()
+	database.ChainID = chainID.String()
 
 	height, err := c.BlockNumber(context.Background())
 	if err != nil {
@@ -31,7 +31,7 @@ func Process(database *data.Database, quit *bool) {
 
 	eth.ProcessBlocks(c, database, nil, big.NewInt(int64(height)))
 
-	for *quit == false {
+	for !*quit {
 		// TODO: handle control+c
 		newHeight, err := c.BlockNumber(context.Background())
 		if err != nil {

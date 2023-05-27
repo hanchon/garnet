@@ -10,49 +10,47 @@ type Card struct {
 	Symbol    string
 }
 
-var (
-	AvailableCards = []Card{
-		{
-			Name:      "Vaan Strife",
-			MaxHealth: 6,
-			Attack:    4,
-			Movement:  2,
-			Symbol:    "(♚)",
-		},
-		{
-			Name:      "Felguard",
-			MaxHealth: 6,
-			Attack:    4,
-			Movement:  2,
-			Symbol:    "(♛)",
-		},
-		{
-			Name:      "Sakura",
-			MaxHealth: 5,
-			Attack:    3,
-			Movement:  3,
-			Symbol:    "(♜)",
-		},
-		{
-			Name:      "Freya",
-			MaxHealth: 5,
-			Attack:    3,
-			Movement:  3,
-			Symbol:    "(♝)",
-		},
-		{
-			Name:      "Lyra",
-			MaxHealth: 5,
-			Attack:    1,
-			Movement:  1,
-			Symbol:    "(♞)",
-		},
-		{
-			Name:      "Madmartigan",
-			MaxHealth: 10,
-			Attack:    2,
-			Movement:  1,
-			Symbol:    "(♟)",
-		},
-	}
-)
+var AvailableCards = []Card{
+	{
+		Name:      "Vaan Strife",
+		MaxHealth: 6,
+		Attack:    4,
+		Movement:  2,
+		Symbol:    "(♚)",
+	},
+	{
+		Name:      "Felguard",
+		MaxHealth: 6,
+		Attack:    4,
+		Movement:  2,
+		Symbol:    "(♛)",
+	},
+	{
+		Name:      "Sakura",
+		MaxHealth: 5,
+		Attack:    3,
+		Movement:  3,
+		Symbol:    "(♜)",
+	},
+	{
+		Name:      "Freya",
+		MaxHealth: 5,
+		Attack:    3,
+		Movement:  3,
+		Symbol:    "(♝)",
+	},
+	{
+		Name:      "Lyra",
+		MaxHealth: 5,
+		Attack:    1,
+		Movement:  1,
+		Symbol:    "(♞)",
+	},
+	{
+		Name:      "Madmartigan",
+		MaxHealth: 10,
+		Attack:    2,
+		Movement:  1,
+		Symbol:    "(♟)",
+	},
+}

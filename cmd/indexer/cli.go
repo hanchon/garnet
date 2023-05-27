@@ -101,9 +101,9 @@ func (ui *DebugUI) ProcessLatestEvents(database *data.Database) {
 				return nil
 			})
 		}
-
 	}
 }
+
 func (ui *DebugUI) ProcessBlockchainInfo(database *data.Database) {
 	for {
 		select {
@@ -123,7 +123,6 @@ func (ui *DebugUI) ProcessBlockchainInfo(database *data.Database) {
 				return nil
 			})
 		}
-
 	}
 }
 
@@ -161,19 +160,19 @@ func (ui *DebugUI) ProcessIncomingData(database *data.Database) {
 				}
 
 				if ui.keyPressed == "DOWN" {
-					ui.yOffset = ui.yOffset + 1
+					ui.yOffset++
 				}
 
 				if ui.keyPressed == "UP" {
-					ui.yOffset = ui.yOffset - 1
+					ui.yOffset--
 				}
 
 				if ui.keyPressed == "PGUP" {
-					ui.yOffset = ui.yOffset - maxLinesToDisplay
+					ui.yOffset -= maxLinesToDisplay
 				}
 
 				if ui.keyPressed == "PGDN" {
-					ui.yOffset = ui.yOffset + maxLinesToDisplay
+					ui.yOffset += maxLinesToDisplay
 				}
 
 				if ui.keyPressed == "END" {
@@ -190,11 +189,14 @@ func (ui *DebugUI) ProcessIncomingData(database *data.Database) {
 							ui.ui.Update(func(g *gocui.Gui) error {
 								if v, err := ui.ui.View("searchboxcontent"); err == nil {
 									v.Clear()
-									v.SetOrigin(0, 0)
-									v.Clear()
+									if err := v.SetOrigin(0, 0); err == nil {
+										v.Clear()
+									}
+
 									v.Editor = gocui.DefaultEditor
 									fmt.Fprintf(v, "%s", temp)
-									v.SetCursor(len(temp), 0)
+									err := v.SetCursor(len(temp), 0)
+									return err
 								}
 								return nil
 							})
@@ -208,7 +210,7 @@ func (ui *DebugUI) ProcessIncomingData(database *data.Database) {
 								if ui.searchIndex-1 < 0 || ui.searchIndex-1 >= len(pos) {
 									ui.searchIndex = len(pos) - 1
 								} else {
-									ui.searchIndex = ui.searchIndex - 1
+									ui.searchIndex--
 								}
 								ui.yOffset = pos[ui.searchIndex]
 							}
@@ -226,10 +228,13 @@ func (ui *DebugUI) ProcessIncomingData(database *data.Database) {
 							ui.ui.Update(func(g *gocui.Gui) error {
 								if v, err := ui.ui.View("searchboxcontent"); err == nil {
 									v.Clear()
-									v.SetOrigin(0, 0)
+									if err := v.SetOrigin(0, 0); err == nil {
+										v.Clear()
+									}
 									v.Clear()
 									fmt.Fprintf(v, "%s", temp)
-									v.SetCursor(len(temp), 0)
+									err := v.SetCursor(len(temp), 0)
+									return err
 								}
 								return nil
 							})
@@ -243,7 +248,7 @@ func (ui *DebugUI) ProcessIncomingData(database *data.Database) {
 								if ui.searchIndex+1 > len(pos)-1 {
 									ui.searchIndex = 0
 								} else {
-									ui.searchIndex = ui.searchIndex + 1
+									ui.searchIndex++
 								}
 								ui.yOffset = pos[ui.searchIndex]
 							}
@@ -263,7 +268,7 @@ func (ui *DebugUI) ProcessIncomingData(database *data.Database) {
 				rerender = true
 			}
 
-			if rerender == true {
+			if rerender {
 				ui.ui.Update(func(g *gocui.Gui) error {
 					v, err := g.View("debugui")
 					if err != nil {
@@ -293,7 +298,6 @@ func (ui *DebugUI) ProcessIncomingData(database *data.Database) {
 					}
 					return nil
 				})
-
 			}
 		}
 	}
@@ -380,8 +384,10 @@ func layout(g *gocui.Gui) error {
 		}
 		v.Frame = false
 		v.Editable = true
-		g.SetCurrentView("searchboxcontent")
+		// TODO: should we handle this error?
+		_, _ = g.SetCurrentView("searchboxcontent")
 		fmt.Fprintf(v, "")
+
 	}
 
 	if v, err := g.SetView("searchboxinfo", blockchainInfoOffset, debugWindowHeight+3, logoWidth+debugWindowWidth, debugWindowHeight+5); err != nil {
@@ -432,52 +438,49 @@ func (ui *DebugUI) keybindings(g *gocui.Gui) error {
 		return err
 	}
 
-	if err := g.SetKeybinding("", gocui.KeyCtrlP, gocui.ModNone, ui.controlPPressed); err != nil {
-		return err
-	}
-
-	return nil
+	return g.SetKeybinding("", gocui.KeyCtrlP, gocui.ModNone, ui.controlPPressed)
 }
 
-func (ui *DebugUI) controlNPressed(g *gocui.Gui, v *gocui.View) error {
+func (ui *DebugUI) controlNPressed(_ *gocui.Gui, _ *gocui.View) error {
 	ui.keyPressed = "N"
 	return nil
 }
 
-func (ui *DebugUI) controlPPressed(g *gocui.Gui, v *gocui.View) error {
+func (ui *DebugUI) controlPPressed(_ *gocui.Gui, _ *gocui.View) error {
 	ui.keyPressed = "P"
 	return nil
 }
 
-func (ui *DebugUI) homePressed(g *gocui.Gui, v *gocui.View) error {
+func (ui *DebugUI) homePressed(_ *gocui.Gui, _ *gocui.View) error {
 	ui.keyPressed = "HOME"
 	return nil
 }
-func (ui *DebugUI) endPressed(g *gocui.Gui, v *gocui.View) error {
+
+func (ui *DebugUI) endPressed(_ *gocui.Gui, _ *gocui.View) error {
 	ui.keyPressed = "END"
 	return nil
 }
 
-func (ui *DebugUI) downPressed(g *gocui.Gui, v *gocui.View) error {
+func (ui *DebugUI) downPressed(_ *gocui.Gui, _ *gocui.View) error {
 	ui.keyPressed = "DOWN"
 	return nil
 }
 
-func (ui *DebugUI) upPressed(g *gocui.Gui, v *gocui.View) error {
+func (ui *DebugUI) upPressed(_ *gocui.Gui, _ *gocui.View) error {
 	ui.keyPressed = "UP"
 	return nil
 }
 
-func (ui *DebugUI) pgUpPressed(g *gocui.Gui, v *gocui.View) error {
+func (ui *DebugUI) pgUpPressed(_ *gocui.Gui, _ *gocui.View) error {
 	ui.keyPressed = "PGUP"
 	return nil
 }
 
-func (ui *DebugUI) pgDnPressed(g *gocui.Gui, v *gocui.View) error {
+func (ui *DebugUI) pgDnPressed(_ *gocui.Gui, _ *gocui.View) error {
 	ui.keyPressed = "PGDN"
 	return nil
 }
 
-func quit(g *gocui.Gui, v *gocui.View) error {
+func quit(_ *gocui.Gui, _ *gocui.View) error {
 	return gocui.ErrQuit
 }

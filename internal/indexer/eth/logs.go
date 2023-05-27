@@ -26,17 +26,11 @@ func OrderLogs(logs []types.Log) []types.Log {
 		second := filteredLogs[j]
 		if first.BlockNumber < second.BlockNumber {
 			return true
-		} else if second.BlockNumber < first.BlockNumber {
-			return false
-		} else {
-			if first.TxIndex < second.TxIndex {
-				return true
-			} else if second.TxIndex < first.TxIndex {
-				return false
-			} else {
-				return first.Index < second.Index
-			}
 		}
+		if second.BlockNumber < first.BlockNumber {
+			return false
+		}
+		return first.Index < second.Index
 	})
 
 	return filteredLogs

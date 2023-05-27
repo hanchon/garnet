@@ -12,7 +12,7 @@ import (
 
 var (
 	//go:embed IWorld.abi.json
-	iworldAbiJson []byte
+	iworldAbiJSON []byte
 
 	IWorldABI abi.ABI
 )
@@ -37,7 +37,7 @@ type AbiStruct []struct {
 func init() {
 	// We need to remove everything that is type error because it breaks the abi decoder
 	var raw AbiStruct
-	err := json.Unmarshal(iworldAbiJson, &raw)
+	err := json.Unmarshal(iworldAbiJSON, &raw)
 	if err != nil {
 		logger.LogError(fmt.Sprintf("failed to unmarshal abi json: %s", err))
 		panic("could not unmarshal json")

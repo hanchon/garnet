@@ -26,8 +26,10 @@ type TableSchema struct {
 	OnChainColNames       map[string]string `json:"on_chain_col_names"`
 }
 
-const CONNECTOR string = "__"
-const TABLE_PREFIX string = "mode"
+const (
+	CONNECTOR    string = "__"
+	TABLE_PREFIX string = "mode"
+)
 
 func DefaultFieldName(index int) string {
 	return "field_" + fmt.Sprint(index)
@@ -37,11 +39,11 @@ func DefaultKeyName(index int) string {
 	return "key_" + fmt.Sprint(index)
 }
 
-func Namespace(chainId string, worldAddress string) string {
+func Namespace(chainID string, worldAddress string) string {
 	var str strings.Builder
 	str.WriteString(TABLE_PREFIX)
-	if chainId != "" {
-		str.WriteString(CONNECTOR + chainId)
+	if chainID != "" {
+		str.WriteString(CONNECTOR + chainID)
 	}
 	if worldAddress != "" {
 		str.WriteString(CONNECTOR + strings.ToLower(worldAddress))

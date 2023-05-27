@@ -23,7 +23,7 @@ func (gs *GameState) updateNotifications() error {
 	// TODO: just add the condition to the for loop
 	j := 0
 	for i := len(gs.notificationMessages) - 1; i >= 0; i-- {
-		fmt.Fprintf(v, fmt.Sprintf(" %s %s\n", gui.ColorYellow("\u27a4"), gs.notificationMessages[i]))
+		fmt.Fprintf(v, " %s %s\n", gui.ColorYellow("\u27a4"), gs.notificationMessages[i])
 		j++
 		if j == 6 {
 			break
@@ -34,7 +34,7 @@ func (gs *GameState) updateNotifications() error {
 }
 
 func generateHeaderNotifications(matchid string) string {
-	var maxLengthNotifications = boardWidth - leftOffset
+	maxLengthNotifications := boardWidth - leftOffset
 
 	titleGameTables := fmt.Sprintf("MESSAGES: %s", matchid)
 	gameTablesSeparator := strings.Repeat("\u2632", (data.SeparatorOffset(maxLengthNotifications, len(titleGameTables)) - 1))
