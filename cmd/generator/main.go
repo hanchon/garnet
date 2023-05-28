@@ -20,7 +20,7 @@ func main() {
 		if err != nil {
 			logger.LogError(fmt.Sprintf("Error generating the wallet %d\n", i))
 		}
-		err = txbuilder.Faucet(account.Address.String())
+		_, err = txbuilder.Faucet(account.Address.String())
 		if err != nil {
 			log.Panic(err)
 		}

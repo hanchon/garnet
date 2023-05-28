@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/hanchon/garnet/internal/backend/cors"
+	"github.com/hanchon/garnet/internal/database"
 	"github.com/hanchon/garnet/internal/indexer/data"
 	"github.com/hanchon/garnet/internal/logger"
 )
@@ -31,24 +32,20 @@ type User struct {
 }
 
 type GlobalState struct {
-	done        chan (struct{})
-	WalletIndex map[string]string
-	WsSockets   map[string]*WebSocketContainer
-	// Simulate users database: map[user]password
-	RegisteredUsers   map[string]User
+	done              chan (struct{})
+	WalletIndex       map[string]string
+	WsSockets         map[string]*WebSocketContainer
+	UsersDatabase     *database.InMemoryDatabase
 	Database          *data.Database
 	LastBroadcastTime time.Time
 }
 
-func NewGlobalState(database *data.Database) GlobalState {
+func NewGlobalState(database *data.Database, usersDatabase *database.InMemoryDatabase) GlobalState {
 	return GlobalState{
-		done:        make(chan struct{}),
-		WalletIndex: make(map[string]string),
-		WsSockets:   make(map[string]*WebSocketContainer),
-		RegisteredUsers: map[string]User{
-			"user1": {Username: "user1", Password: "password1", WalletID: 0},
-			"user2": {Username: "user2", Password: "password2", WalletID: 1},
-		},
+		done:              make(chan struct{}),
+		WalletIndex:       make(map[string]string),
+		WsSockets:         make(map[string]*WebSocketContainer),
+		UsersDatabase:     usersDatabase,
 		Database:          database,
 		LastBroadcastTime: time.Now(),
 	}

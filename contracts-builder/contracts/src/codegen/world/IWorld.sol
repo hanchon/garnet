@@ -11,6 +11,7 @@ import { IEndTurnSystem } from "./IEndTurnSystem.sol";
 import { IJoinMatchSystem } from "./IJoinMatchSystem.sol";
 import { IMoveCardSystem } from "./IMoveCardSystem.sol";
 import { IPlaceCardSystem } from "./IPlaceCardSystem.sol";
+import { IRegisterSystem } from "./IRegisterSystem.sol";
 
 /**
  * The IWorld interface includes all systems dynamically added to the World
@@ -23,7 +24,8 @@ interface IWorld is
   IEndTurnSystem,
   IJoinMatchSystem,
   IMoveCardSystem,
-  IPlaceCardSystem
+  IPlaceCardSystem,
+  IRegisterSystem
 {
 
 }

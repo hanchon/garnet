@@ -41,7 +41,7 @@ func SendTransaction(accountID int, message string, args ...interface{}) error {
 	}
 
 	// Get coins
-	err = Faucet(account.Address.Hex())
+	_, err = Faucet(account.Address.Hex())
 	if err != nil {
 		return err
 	}

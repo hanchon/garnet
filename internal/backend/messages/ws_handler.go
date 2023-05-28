@@ -41,7 +41,7 @@ func (g *GlobalState) WsHandler(ws *WebSocketContainer) {
 
 		switch m.MsgType {
 		case "connect":
-			if connectMessage(ws, g.RegisteredUsers, &p) != nil {
+			if connectMessage(ws, g.UsersDatabase, &p) != nil {
 				return
 			}
 

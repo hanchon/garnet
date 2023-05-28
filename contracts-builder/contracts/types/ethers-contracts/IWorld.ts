@@ -56,6 +56,7 @@ export interface IWorldInterface extends utils.Interface {
     "popFromField(bytes32,bytes32[],uint8,uint256)": FunctionFragment;
     "pushToField(bytes32,bytes32[],uint8,bytes)": FunctionFragment;
     "pushToField(bytes16,bytes16,bytes32[],uint8,bytes)": FunctionFragment;
+    "register(bytes32)": FunctionFragment;
     "registerFunctionSelector(bytes16,bytes16,string,string)": FunctionFragment;
     "registerHook(bytes16,bytes16,address)": FunctionFragment;
     "registerNamespace(bytes16)": FunctionFragment;
@@ -106,6 +107,7 @@ export interface IWorldInterface extends utils.Interface {
       | "popFromField(bytes32,bytes32[],uint8,uint256)"
       | "pushToField(bytes32,bytes32[],uint8,bytes)"
       | "pushToField(bytes16,bytes16,bytes32[],uint8,bytes)"
+      | "register"
       | "registerFunctionSelector"
       | "registerHook"
       | "registerNamespace"
@@ -303,6 +305,10 @@ export interface IWorldInterface extends utils.Interface {
       PromiseOrValue<BigNumberish>,
       PromiseOrValue<BytesLike>
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "register",
+    values: [PromiseOrValue<BytesLike>]
   ): string;
   encodeFunctionData(
     functionFragment: "registerFunctionSelector",
@@ -544,6 +550,7 @@ export interface IWorldInterface extends utils.Interface {
     functionFragment: "pushToField(bytes16,bytes16,bytes32[],uint8,bytes)",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "register", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "registerFunctionSelector",
     data: BytesLike
@@ -895,6 +902,11 @@ export interface IWorld extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
+    register(
+      name: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<ContractTransaction>;
+
     registerFunctionSelector(
       namespace: PromiseOrValue<BytesLike>,
       name: PromiseOrValue<BytesLike>,
@@ -1218,6 +1230,11 @@ export interface IWorld extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
+  register(
+    name: PromiseOrValue<BytesLike>,
+    overrides?: Overrides & { from?: PromiseOrValue<string> }
+  ): Promise<ContractTransaction>;
+
   registerFunctionSelector(
     namespace: PromiseOrValue<BytesLike>,
     name: PromiseOrValue<BytesLike>,
@@ -1536,6 +1553,11 @@ export interface IWorld extends BaseContract {
       key: PromiseOrValue<BytesLike>[],
       schemaIndex: PromiseOrValue<BigNumberish>,
       dataToPush: PromiseOrValue<BytesLike>,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    register(
+      name: PromiseOrValue<BytesLike>,
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1909,6 +1931,11 @@ export interface IWorld extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
+    register(
+      name: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<BigNumber>;
+
     registerFunctionSelector(
       namespace: PromiseOrValue<BytesLike>,
       name: PromiseOrValue<BytesLike>,
@@ -2230,6 +2257,11 @@ export interface IWorld extends BaseContract {
       key: PromiseOrValue<BytesLike>[],
       schemaIndex: PromiseOrValue<BigNumberish>,
       dataToPush: PromiseOrValue<BytesLike>,
+      overrides?: Overrides & { from?: PromiseOrValue<string> }
+    ): Promise<PopulatedTransaction>;
+
+    register(
+      name: PromiseOrValue<BytesLike>,
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<PopulatedTransaction>;
 
