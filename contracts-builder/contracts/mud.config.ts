@@ -26,8 +26,16 @@ export default mudConfig({
       name: "endturn",
       openAccess: true,
     },
+    RegisterSystem: {
+      name: "register",
+      openAccess: true,
+    },
   },
   tables: {
+      // Users
+    User: "bytes32",
+
+    // Matches config
     MapConfig: {
       primaryKeys: {},
       schema: {

@@ -1,18 +1,71 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
+	"fmt"
 	"log"
+	"net/http"
 	"os"
+	"time"
 
 	"github.com/hanchon/garnet/internal/backend"
+	"github.com/hanchon/garnet/internal/backend/api"
 	"github.com/hanchon/garnet/internal/indexer"
 	"github.com/hanchon/garnet/internal/indexer/data"
-	"github.com/hanchon/garnet/internal/txbuilder"
 )
 
 const (
 	port = 6666
 )
+
+func pingServer() error {
+	client := &http.Client{
+		Timeout: time.Second,
+	}
+
+	r, err := client.Get(fmt.Sprintf("http://localhost:%d/ping", port))
+	if err != nil {
+		return err
+	}
+
+	if r.StatusCode != http.StatusOK {
+		return fmt.Errorf("incorrect response: %d", r.StatusCode)
+	}
+
+	return nil
+}
+
+func createUser(username string, password string) error {
+	client := &http.Client{
+		Timeout: 2 * time.Second,
+	}
+
+	body := api.RegistationParams{
+		Username: username,
+		Password: password,
+	}
+
+	bodyBytes, err := json.Marshal(body)
+	if err != nil {
+		return err
+	}
+	r, err := http.NewRequest("POST", fmt.Sprintf("http://localhost:%d/signup", port), bytes.NewBuffer(bodyBytes))
+	if err != nil {
+		return err
+	}
+	r.Header.Add("Content-Type", "application/json")
+
+	res, err := client.Do(r)
+	if err != nil {
+		return fmt.Errorf("error sending the signup request: %s", err.Error())
+	}
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("incorrect response: %d", r.Response.StatusCode)
+	}
+
+	return nil
+}
 
 func main() {
 	// Set the log output to a file (stdin, stdout, stderror used by GUI)
@@ -24,12 +77,6 @@ func main() {
 	defer logFile.Close()
 	log.SetOutput(logFile)
 	log.SetFlags(log.LstdFlags)
-
-	// Send coins to user wallets
-	_, a, _ := txbuilder.GetWallet(0)
-	_ = txbuilder.Faucet(a.Address.Hex())
-	_, a, _ = txbuilder.GetWallet(1)
-	_ = txbuilder.Faucet(a.Address.Hex())
 
 	// Index the database
 	quit := false
@@ -48,6 +95,14 @@ func main() {
 	go func() {
 		_ = backend.StartGorillaServer(port, database)
 	}()
+
+	err = fmt.Errorf("")
+	for err != nil {
+		// This will ping the server with 1 second timeout until it's alive
+		err = pingServer()
+	}
+	_ = createUser("user1", "password1")
+	_ = createUser("user2", "password2")
 
 	// Display the GUI
 	ui.Run()

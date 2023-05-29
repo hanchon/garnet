@@ -908,6 +908,19 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "bytes32",
+        name: "name",
+        type: "bytes32",
+      },
+    ],
+    name: "register",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "bytes16",
         name: "namespace",
         type: "bytes16",
