@@ -57,6 +57,9 @@ func createUser(username string, password string) error {
 	r.Header.Add("Content-Type", "application/json")
 
 	res, err := client.Do(r)
+	if err != nil {
+		return fmt.Errorf("error sending the signup request: %s", err.Error())
+	}
 	if res.StatusCode != http.StatusOK {
 		return fmt.Errorf("incorrect response: %d", r.Response.StatusCode)
 	}

@@ -26,23 +26,24 @@ func RestRoutes(router *mux.Router, db *database.InMemoryDatabase) {
 
 func SendInternalErrorResponse(msg string, w *http.ResponseWriter) {
 	(*w).WriteHeader(http.StatusInternalServerError)
-	fmt.Fprintf(*w, msg)
+	fmt.Fprint(*w, msg)
 }
 
 func SendBadRequestResponse(msg string, w *http.ResponseWriter) {
 	(*w).WriteHeader(http.StatusBadRequest)
-	fmt.Fprintf(*w, msg)
+	fmt.Fprint(*w, msg)
 }
 
-func SendJsonResponse(message interface{}, w *http.ResponseWriter) {
+func SendJSONResponse(message interface{}, w *http.ResponseWriter) error {
 	v, err := json.Marshal(message)
 	if err != nil {
 		SendInternalErrorResponse("invalid encoding for response", w)
-		return
+		return err
 	}
 	(*w).Header().Set("Content-Type", "application/json")
 	(*w).WriteHeader(http.StatusOK)
-	(*w).Write(v)
+	_, err = (*w).Write(v)
+	return err
 }
 
 // RegistationParams is struct to read the request body
@@ -62,7 +63,10 @@ func RegisterPing(response http.ResponseWriter, request *http.Request) {
 		return
 	}
 	response.WriteHeader(http.StatusOK)
-	response.Write([]byte("pong"))
+	_, err := response.Write([]byte("pong"))
+	if err != nil {
+		logger.LogDebug(fmt.Sprintf("[api] error sending pong: %s", err.Error()))
+	}
 }
 
 func RegisterEndpoint(response http.ResponseWriter, request *http.Request, db *database.InMemoryDatabase) {
@@ -98,7 +102,7 @@ func RegisterEndpoint(response http.ResponseWriter, request *http.Request, db *d
 
 	logger.LogDebug(fmt.Sprintf("[api] registered user %s with id %d", registationRequest.Username, index))
 
-	var registrationResponse = RegistationResponse{
+	registrationResponse := RegistationResponse{
 		Username: registationRequest.Username,
 		Index:    index,
 	}
@@ -138,5 +142,8 @@ func RegisterEndpoint(response http.ResponseWriter, request *http.Request, db *d
 		}
 	}
 
-	SendJsonResponse(registrationResponse, &response)
+	err = SendJSONResponse(registrationResponse, &response)
+	if err != nil {
+		logger.LogError(fmt.Sprintf("[backend] error sending response to client %s", err.Error()))
+	}
 }
