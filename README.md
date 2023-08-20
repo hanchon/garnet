@@ -1,5 +1,7 @@
 # Garnet
 
+**MOVED TO**: [bocha-io](https://github.com/bocha-io/garnet)
+
 Autonomous Worlds hackathon entry.
 
 - Garnet: is a custom indexer and backend code running on top of MUDv2.
